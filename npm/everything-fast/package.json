@@ -1,7 +1,7 @@
 {
   "name": "everything-fast",
-  "version": "0.8.6",
-  "description": "Don't rewrite it in Rust. Rewrite the 5% that's slow: profile Python, Node, Ruby, Java, Go, PHP, C, C++ or C# apps, port the hot functions with your coding agent, prove they behave the same.",
+  "version": "0.9.0",
+  "description": "Don't rewrite it all. Rewrite the 5% that's slow: profile Python, Node, Ruby, Java, Go, PHP, C, C++ or C# apps, port the hot functions with your coding agent, prove they behave the same.",
   "keywords": [
     "rust",
     "python",
@@ -49,11 +49,11 @@
     "node": ">=18"
   },
   "optionalDependencies": {
-    "everything-fast-win32-x64": "0.8.6",
-    "everything-fast-linux-x64": "0.8.6",
-    "everything-fast-linux-arm64": "0.8.6",
-    "everything-fast-darwin-arm64": "0.8.6",
-    "everything-fast-darwin-x64": "0.8.6"
+    "everything-fast-win32-x64": "0.9.0",
+    "everything-fast-linux-x64": "0.9.0",
+    "everything-fast-linux-arm64": "0.9.0",
+    "everything-fast-darwin-arm64": "0.9.0",
+    "everything-fast-darwin-x64": "0.9.0"
   },
   "publishConfig": {
     "access": "public"

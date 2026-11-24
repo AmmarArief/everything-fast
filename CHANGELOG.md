@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.0
+- Renamed the project from fast-anything to everything-fast: binary, crate, npm packages, MCP tools (`everything_scan`, `everything_port`, `everything_verify`, `everything_enable`, `everything_disable`, `everything_bench`, `everything_report`, `everything_status`), environment variables (`EVERYTHING_FAST_*`) and paths.
+- New bolt logo, wordmark, social card and demo GIFs; README rewritten.
+
 ## 0.8.6
 
 - C#: apps start through their own launcher (`App.exe`), as `dotnet run` does, so WinUI 3 / Windows App SDK apps no longer crash with `0xc000027b` (#79).
