@@ -1,0 +1,236 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.14"]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: ffi
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test
+      - run: node --test npm/fast-anything/bin/fast-anything.test.js
+      - run: cargo build --release
+      - name: end to end on the demo (reference port instead of an agent)
+        working-directory: examples/fuzzy-dedupe
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- python app.py
+          $fa port
+          cp reference/lib.rs .fast/ports/$(ls .fast/ports)/src/lib.rs
+          $fa verify
+          $fa enable
+          python app.py
+          $fa bench --runs 2
+          $fa report
+          $fa disable
+          git diff --exit-code fuzzy.py
+      - name: end to end, TypeScript
+        working-directory: examples/fuzzy-dedupe-ts
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- node app.ts
+          $fa port
+          cp reference/lib.rs .fast/ports/$(ls .fast/ports)/src/lib.rs
+          $fa verify
+          $fa enable
+          node app.ts
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code fuzzy.ts
+      - name: end to end, Ruby
+        working-directory: examples/fuzzy-dedupe-rb
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- ruby app.rb
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          ruby app.rb
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code fuzzy.rb
+      - name: end to end, Java
+        working-directory: examples/fuzzy-dedupe-java
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- java App.java
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          java --enable-native-access=ALL-UNNAMED App.java
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code Fuzzy.java
+          test -z "$(git status --porcelain .)"
+      - name: end to end, Go
+        working-directory: examples/fuzzy-dedupe-go
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- go run .
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          go run .
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code fuzzy.go main.go
+          test -z "$(git status --porcelain .)"
+      - name: end to end, PHP
+        working-directory: examples/fuzzy-dedupe-php
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- php app.php
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          php app.php
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code fuzzy.php
+          test -z "$(git status --porcelain .)"
+      - name: end to end, Java with Maven
+        working-directory: examples/fuzzy-dedupe-java-build
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- mvn -q compile exec:java
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          mvn -q compile exec:java
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code src
+          rm -rf .fast target
+      - name: end to end, Java with Gradle
+        working-directory: examples/fuzzy-dedupe-java-build
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- gradle -q run
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          gradle -q --no-daemon run
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code src
+      - name: end to end, Kotlin with Gradle
+        working-directory: examples/fuzzy-dedupe-kt
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- gradle -q run
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          gradle -q --no-daemon run
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code src
+          test -z "$(git status --porcelain .)"
+      - name: end to end, R
+        working-directory: examples/fuzzy-dedupe-r
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- Rscript app.R
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          Rscript app.R
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code fuzzy.R
+          test -z "$(git status --porcelain .)"
+      - name: end to end, C#
+        working-directory: examples/fuzzy-dedupe-cs
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- dotnet run -c Release
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          dotnet run -c Release
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code Fuzzy.cs
+          test -z "$(git status --porcelain .)"
+      - name: end to end, C
+        working-directory: examples/mandelbrot-c
+        run: |
+          fa=../../target/release/fast-anything
+          $fa scan -- clang -O2 -ffp-contract=off main.c mandelbrot.c
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          clang -O2 -ffp-contract=off main.c mandelbrot.c -o app && ./app
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code mandelbrot.c
+      - name: end to end, C++
+        working-directory: examples/fuzzy-dedupe-cpp
+        run: |
+          fa=../../target/release/fast-anything
+          # the runner's standalone clang can be older than the MSVC STL it pairs with
+          extra=""; if [ "$RUNNER_OS" = Windows ]; then extra=-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH; fi
+          $fa scan -- clang++ -O2 -std=c++17 $extra main.cpp fuzzy.cpp
+          $fa port
+          cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
+          $fa verify
+          $fa enable
+          clang++ -O2 -std=c++17 $extra main.cpp fuzzy.cpp -o app && ./app
+          $fa bench --runs 2
+          $fa disable
+          git diff --exit-code fuzzy.cpp

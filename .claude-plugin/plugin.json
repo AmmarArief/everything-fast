@@ -1,0 +1,21 @@
+{
+  "name": "fast-anything",
+  "version": "0.8.6",
+  "description": "Find the slow 5% of your app, port just that to Rust, and prove it still behaves the same.",
+  "author": {
+    "name": "M. Ammar R. Arief"
+  },
+  "homepage": "https://github.com/AmmarArief/everything-fast",
+  "repository": "https://github.com/AmmarArief/everything-fast",
+  "license": "MIT",
+  "keywords": [
+    "rust",
+    "python",
+    "nodejs",
+    "typescript",
+    "performance",
+    "pyo3",
+    "napi-rs",
+    "profiling"
+  ]
+}
