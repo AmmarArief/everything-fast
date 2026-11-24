@@ -1,8 +1,8 @@
 /*PACKAGE*/
-// fast-anything: records calls to /*ID*/ for one run. Generated; removed when the run ends.
-final class FastAnythingRec {
+// everything-fast: records calls to /*ID*/ for one run. Generated; removed when the run ends.
+final class EverythingFastRec {
     static boolean inside;
-    static final int LIMIT = Integer.parseInt(System.getenv().getOrDefault("FAST_ANYTHING_RECORD_LIMIT", "500"));
+    static final int LIMIT = Integer.parseInt(System.getenv().getOrDefault("EVERYTHING_FAST_RECORD_LIMIT", "500"));
     static final java.util.Random RNG = new java.util.Random(0xFA57);
     static final java.util.List<String> kept = new java.util.ArrayList<>();
     static final java.util.List<Object[]> keptArgs = new java.util.ArrayList<>();
@@ -12,7 +12,7 @@ final class FastAnythingRec {
     static java.util.function.Function<Object[], Object> fn;
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread(FastAnythingRec::save));
+        Runtime.getRuntime().addShutdownHook(new Thread(EverythingFastRec::save));
     }
 
     static synchronized Object record(Object[] args, java.util.function.Function<Object[], Object> f) {
@@ -147,12 +147,12 @@ final class FastAnythingRec {
             StringBuilder b = new StringBuilder();
             for (String line : kept) b.append(line).append('\n');
             for (String line : derived) b.append(line).append('\n');
-            java.nio.file.Files.writeString(java.nio.file.Path.of(System.getenv("FAST_ANYTHING_RECORD_OUT")), b, java.nio.charset.StandardCharsets.UTF_8);
+            java.nio.file.Files.writeString(java.nio.file.Path.of(System.getenv("EVERYTHING_FAST_RECORD_OUT")), b, java.nio.charset.StandardCharsets.UTF_8);
             StringBuilder u = new StringBuilder("[");
             for (String s : unsupported) u.append(u.length() > 1 ? "," : "").append(Json.str(s));
             String meta = "{\"calls\":" + calls + ",\"kept\":" + kept.size() + ",\"skipped\":" + skipped + ",\"unsupported\":" + u + "],\"mutates\":" + mutates
                 + ",\"original_ns\":" + (calls > 0 ? (double) nanos / calls : 0) + "}";
-            java.nio.file.Files.writeString(java.nio.file.Path.of(System.getenv("FAST_ANYTHING_RECORD_META")), meta, java.nio.charset.StandardCharsets.UTF_8);
+            java.nio.file.Files.writeString(java.nio.file.Path.of(System.getenv("EVERYTHING_FAST_RECORD_META")), meta, java.nio.charset.StandardCharsets.UTF_8);
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }

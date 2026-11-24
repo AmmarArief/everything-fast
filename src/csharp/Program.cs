@@ -1,6 +1,6 @@
-// C# side of fast-anything's scan. The CLI runs it as
-//     FastAnythingTools describe <file list> <out.json>   every method in the app's sources (Roslyn)
-//     FastAnythingTools trace <dir> <out.json>            sampled stacks from the .nettrace files in dir
+// C# side of everything-fast's scan. The CLI runs it as
+//     EverythingFastTools describe <file list> <out.json>   every method in the app's sources (Roslyn)
+//     EverythingFastTools trace <dir> <out.json>            sampled stacks from the .nettrace files in dir
 // and loads it into the app as a startup hook to stop it after scan --duration.
 // Not meant to be run by hand.
 using System.Text;
@@ -33,8 +33,8 @@ public static class StartupHook
 {
     public static void Initialize()
     {
-        if (!int.TryParse(Environment.GetEnvironmentVariable("FAST_ANYTHING_STOP_AFTER_MS"), out var ms)) return;
-        new Thread(() => { Thread.Sleep(ms); Environment.Exit(0); }) { IsBackground = true, Name = "fast-anything stop" }.Start();
+        if (!int.TryParse(Environment.GetEnvironmentVariable("EVERYTHING_FAST_STOP_AFTER_MS"), out var ms)) return;
+        new Thread(() => { Thread.Sleep(ms); Environment.Exit(0); }) { IsBackground = true, Name = "everything-fast stop" }.Start();
     }
 }
 

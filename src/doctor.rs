@@ -1,4 +1,4 @@
-//! fast-anything doctor: is everything a port needs installed?
+//! everything-fast doctor: is everything a port needs installed?
 
 use crate::ui::{self, bold, dim, green, red, yellow};
 use anyhow::{Result, ensure};
@@ -11,7 +11,7 @@ fn version(program: &str, args: &[&str]) -> Option<String> {
     Some(text.lines().next().unwrap_or("").trim().to_string())
 }
 
-/// The oldest version fast-anything works with, as each backend checks it when it starts.
+/// The oldest version everything-fast works with, as each backend checks it when it starts.
 fn minimum(name: &str) -> &'static [u32] {
     match name {
         "cargo" => &[1, 85], // ports use edition 2024

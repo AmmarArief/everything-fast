@@ -1,4 +1,4 @@
-//! fast-anything: find the slow 5% of your app, rewrite just that in Rust, prove it behaves the same.
+//! everything-fast: find the slow 5% of your app, rewrite just that in Rust, prove it behaves the same.
 
 mod agent;
 mod backend;
@@ -30,9 +30,9 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 #[derive(Parser)]
-#[command(name = "fast-anything", version, about, arg_required_else_help = true)]
+#[command(name = "everything-fast", version, about, arg_required_else_help = true)]
 #[command(
-    after_help = "One command:\n  fast-anything go --agent claude -- python app.py\n\nStep by step:\n  fast-anything scan -- python app.py\n  fast-anything port\n  fast-anything verify\n  fast-anything enable <id>\n  fast-anything bench"
+    after_help = "One command:\n  everything-fast go --agent claude -- python app.py\n\nStep by step:\n  everything-fast scan -- python app.py\n  everything-fast port\n  everything-fast verify\n  everything-fast enable <id>\n  everything-fast bench"
 )]
 struct Cli {
     /// Project folder (default: the current folder)
@@ -168,7 +168,7 @@ fn run(cmd: Cmd, root: &Path) -> Result<()> {
                     bail!("{agent} couldn't get {} right in {attempts} attempts", out.id);
                 }
                 if !v.slower() {
-                    show::next(&format!("fast-anything enable {}", out.id));
+                    show::next(&format!("everything-fast enable {}", out.id));
                 }
             }
             Ok(())
@@ -181,14 +181,14 @@ fn run(cmd: Cmd, root: &Path) -> Result<()> {
                 bail!("{id} doesn't match the original yet");
             }
             if !v.slower() {
-                show::next(&format!("fast-anything enable {id}"));
+                show::next(&format!("everything-fast enable {id}"));
             }
             Ok(())
         }
         Cmd::Enable { id, force } => {
             let id = pipeline::enable(root, id.as_deref(), force)?;
             ui::ok(format!("{} now runs in Rust", ui::bold(&id)));
-            show::next("fast-anything bench");
+            show::next("everything-fast bench");
             Ok(())
         }
         Cmd::Disable { all: true, .. } => {
@@ -210,7 +210,7 @@ fn run(cmd: Cmd, root: &Path) -> Result<()> {
         Cmd::Clean { all } => pipeline::clean(root, all),
         Cmd::Bench { runs } => {
             show::bench(&pipeline::bench(root, runs)?);
-            show::next("fast-anything report");
+            show::next("everything-fast report");
             Ok(())
         }
         Cmd::Report => {
@@ -233,28 +233,28 @@ mod tests {
     #[test]
     fn disable_all_parses() {
         assert!(matches!(
-            Cli::try_parse_from(["fast-anything", "disable", "--all"]).unwrap().cmd,
+            Cli::try_parse_from(["everything-fast", "disable", "--all"]).unwrap().cmd,
             Cmd::Disable { all: true, id: None }
         ));
-        assert!(Cli::try_parse_from(["fast-anything", "disable", "fuzzy.lev", "--all"]).is_err());
+        assert!(Cli::try_parse_from(["everything-fast", "disable", "fuzzy.lev", "--all"]).is_err());
     }
 
     #[test]
     fn clean_parses() {
-        assert!(matches!(Cli::try_parse_from(["fast-anything", "clean"]).unwrap().cmd, Cmd::Clean { all: false }));
+        assert!(matches!(Cli::try_parse_from(["everything-fast", "clean"]).unwrap().cmd, Cmd::Clean { all: false }));
         assert!(matches!(
-            Cli::try_parse_from(["fast-anything", "clean", "--all"]).unwrap().cmd,
+            Cli::try_parse_from(["everything-fast", "clean", "--all"]).unwrap().cmd,
             Cmd::Clean { all: true }
         ));
     }
 
     #[test]
     fn verify_all_parses() {
-        let cli = Cli::try_parse_from(["fast-anything", "verify", "--all"]).unwrap();
+        let cli = Cli::try_parse_from(["everything-fast", "verify", "--all"]).unwrap();
         assert!(matches!(cli.cmd, Cmd::Verify { all: true, id: None }));
-        assert!(Cli::try_parse_from(["fast-anything", "verify", "fuzzy.lev", "--all"]).is_err(), "an id or --all");
+        assert!(Cli::try_parse_from(["everything-fast", "verify", "fuzzy.lev", "--all"]).is_err(), "an id or --all");
         assert!(matches!(
-            Cli::try_parse_from(["fast-anything", "verify"]).unwrap().cmd,
+            Cli::try_parse_from(["everything-fast", "verify"]).unwrap().cmd,
             Cmd::Verify { all: false, .. }
         ));
     }

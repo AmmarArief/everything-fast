@@ -1,4 +1,4 @@
-// Java side of fast-anything's scan: reads the app's sources with javac's own parser and describes
+// Java side of everything-fast's scan: reads the app's sources with javac's own parser and describes
 // every method. The CLI runs it as  java Describe.java <file list> <out.json>. Not meant to be run by hand.
 import com.sun.source.tree.*;
 import com.sun.source.util.*;

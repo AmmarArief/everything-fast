@@ -1,14 +1,14 @@
 {
-  "name": "fast-anything",
+  "name": "everything-fast",
   "owner": {
     "name": "M. Ammar R. Arief"
   },
   "plugins": [
     {
-      "name": "fast-anything",
+      "name": "everything-fast",
       "source": "./",
       "description": "Port your app's hottest functions to Rust and prove they behave the same."
     }
   ],
-  "description": "fast-anything: port your app's hottest functions to Rust and prove they behave the same."
+  "description": "everything-fast: port your app's hottest functions to Rust and prove they behave the same."
 }

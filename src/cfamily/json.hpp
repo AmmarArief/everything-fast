@@ -1,4 +1,4 @@
-// ---- JSON for fast-anything's C++ recorder and bridge (C++14). Generated; don't edit.
+// ---- JSON for everything-fast's C++ recorder and bridge (C++14). Generated; don't edit.
 inline bool fa_utf8(const std::string &s) {
     size_t i = 0;
     while (i < s.size()) {

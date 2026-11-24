@@ -1,6 +1,6 @@
-/* fast-anything profiler for one run: force-included with -include, removed afterwards. */
-#ifndef FAST_ANYTHING_PROF_H
-#define FAST_ANYTHING_PROF_H
+/* everything-fast profiler for one run: force-included with -include, removed afterwards. */
+#ifndef EVERYTHING_FAST_PROF_H
+#define EVERYTHING_FAST_PROF_H
 #ifdef __cplusplus
 extern "C" {
 #endif

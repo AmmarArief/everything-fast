@@ -1,17 +1,17 @@
-# fast-anything's R startup file: R_PROFILE_USER points here while fast-anything profiles or
+# everything-fast's R startup file: R_PROFILE_USER points here while everything-fast profiles or
 # records an app, so the app runs with its own command line. Not meant to be used by hand.
-#   FAST_ANYTHING_MODE=profile: Rprof samples the whole run.
-#   FAST_ANYTHING_MODE=record:  .fast_anything_wrap(f) records calls to f (fast-anything adds a
+#   EVERYTHING_FAST_MODE=profile: Rprof samples the whole run.
+#   EVERYTHING_FAST_MODE=record:  .everything_fast_wrap(f) records calls to f (everything-fast adds a
 #                               line calling it right after the function's definition).
 # The user's own startup file (R_PROFILE_USER, ./.Rprofile or ~/.Rprofile) still runs, at the end.
 
 local({
-  mode <- Sys.getenv("FAST_ANYTHING_MODE")
+  mode <- Sys.getenv("EVERYTHING_FAST_MODE")
   fa <- new.env()
-  sys.source(Sys.getenv("FAST_ANYTHING_BRIDGE"), envir = fa)
+  sys.source(Sys.getenv("EVERYTHING_FAST_BRIDGE"), envir = fa)
 
   if (mode == "profile") {
-    out <- Sys.getenv("FAST_ANYTHING_OUT")
+    out <- Sys.getenv("EVERYTHING_FAST_OUT")
     start <- proc.time()[["elapsed"]]
     utils::Rprof(out, interval = 0.005)
     reg.finalizer(fa, function(e) {
@@ -19,12 +19,12 @@ local({
       writeLines(format(proc.time()[["elapsed"]] - start, digits = 15), paste0(out, ".wall"))
     }, onexit = TRUE)
     # kept reachable, so the finalizer runs when R exits, not at the next garbage collection
-    assign(".fast_anything_profile", fa, envir = globalenv())
+    assign(".everything_fast_profile", fa, envir = globalenv())
   }
 
   if (mode == "record") {
     state <- new.env()
-    state$limit <- as.integer(Sys.getenv("FAST_ANYTHING_RECORD_LIMIT", "500"))
+    state$limit <- as.integer(Sys.getenv("EVERYTHING_FAST_RECORD_LIMIT", "500"))
     state$calls <- 0
     state$skipped <- 0
     state$unsupported <- character()
@@ -70,10 +70,10 @@ local({
       result
     }
 
-    assign(".fast_anything_wrap", function(f) fa$.fa_like(f, function(args) record(f, args)), envir = globalenv())
+    assign(".everything_fast_wrap", function(f) fa$.fa_like(f, function(args) record(f, args)), envir = globalenv())
 
     reg.finalizer(state, function(e) {
-      out <- Sys.getenv("FAST_ANYTHING_RECORD_OUT")
+      out <- Sys.getenv("EVERYTHING_FAST_RECORD_OUT")
       lines <- vapply(state$kept, function(c) {
         tail <- if (is.null(c$raises)) paste0("\"result\":", c$result_json) else paste0("\"raises\":", fa$.fa_str(c$raises))
         paste0("{\"args\":", c$json, ",", tail, "}")
@@ -82,11 +82,11 @@ local({
       saveRDS(lapply(state$kept, function(c) c[c("args", "result", "raises")]), sub("\\.jsonl$", ".rds", out))
       meta <- list(calls = state$calls, kept = length(state$kept), skipped = state$skipped,
                    unsupported = as.list(state$unsupported), mutates = FALSE)
-      writeLines(fa$.fa_json(meta), Sys.getenv("FAST_ANYTHING_RECORD_META"))
+      writeLines(fa$.fa_json(meta), Sys.getenv("EVERYTHING_FAST_RECORD_META"))
     }, onexit = TRUE)
   }
 
-  user <- Sys.getenv("FAST_ANYTHING_USER_RPROFILE")
+  user <- Sys.getenv("EVERYTHING_FAST_USER_RPROFILE")
   if (!nzchar(user)) user <- if (file.exists(".Rprofile")) ".Rprofile" else path.expand("~/.Rprofile")
   if (file.exists(user)) sys.source(user, envir = globalenv())
 })

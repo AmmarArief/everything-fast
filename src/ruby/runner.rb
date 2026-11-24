@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Ruby side of fast-anything. The CLI copies this file to <project>/.fast/runner.rb and runs
+# Ruby side of everything-fast. The CLI copies this file to <project>/.fast/runner.rb and runs
 #     ruby runner.rb <mode> <job.json> -- <the app's ruby arguments>
 # Modes: profile, verify. Not meant to be run by hand.
 require "json"
@@ -20,7 +20,7 @@ def parse_target(argv)
     flag = args.shift
     args.shift if %w[-r -I -C].include?(flag)
   end
-  abort "fast-anything: give the app as 'ruby script.rb ...'" if args.empty?
+  abort "everything-fast: give the app as 'ruby script.rb ...'" if args.empty?
   [File.expand_path(args.shift), args]
 end
 
@@ -277,13 +277,13 @@ def derive_edges(original, cases, budget, limit)
   started = Process.clock_gettime(clock)
   left = -> { budget - (Process.clock_gettime(clock) - started) }
   attempt = lambda do |args|
-    encoded = { "args" => FastAnything.enc(args) }
+    encoded = { "args" => EverythingFast.enc(args) }
     key = JSON.generate(encoded)
     return nil if seen[key]
 
     seen[key] = true
     t = Process.clock_gettime(clock)
-    encoded["result"] = FastAnything.enc(original.call(*Marshal.load(Marshal.dump(args))))
+    encoded["result"] = EverythingFast.enc(original.call(*Marshal.load(Marshal.dump(args))))
     took = Process.clock_gettime(clock) - t
     encoded["derived"] = "edge"
     derived << encoded
@@ -293,7 +293,7 @@ def derive_edges(original, cases, budget, limit)
   end
   grown = {}
   cases.reject { |c| c.key?("raises") }.first(EDGE_SAMPLE).each do |c|
-    args = FastAnything.dec(c["args"])
+    args = EverythingFast.dec(c["args"])
     base = args.map { |a| small(a) }
     args.each_with_index do |arg, i|
       edges(base[i]).each do |e|
@@ -333,7 +333,7 @@ def derive(original, cases, budget, limit)
   cases.each do |c|
     next if c.key?("raises")
 
-    args = FastAnything.dec(c["args"])
+    args = EverythingFast.dec(c["args"])
     args.each_with_index do |arg, i|
       variants(arg, rng).each do |smaller|
         return derived if derived.length >= limit || Process.clock_gettime(Process::CLOCK_MONOTONIC) - started > budget
@@ -341,12 +341,12 @@ def derive(original, cases, budget, limit)
         next_args = args.dup
         next_args[i] = smaller
         begin
-          encoded = { "args" => FastAnything.enc(next_args) }
+          encoded = { "args" => EverythingFast.enc(next_args) }
           key = JSON.generate(encoded)
           next if seen[key]
 
           seen[key] = true
-          encoded["result"] = FastAnything.enc(original.call(*Marshal.load(Marshal.dump(next_args))))
+          encoded["result"] = EverythingFast.enc(original.call(*Marshal.load(Marshal.dump(next_args))))
         rescue StandardError
           next # outside the function's domain: not a fair test
         end
@@ -383,9 +383,9 @@ def show(v, limit = 160)
 end
 
 def cmd_verify(job, _argv)
-  ENV["FAST_ANYTHING_DISABLE"] = "1"
+  ENV["EVERYTHING_FAST_DISABLE"] = "1"
   fast = bridge(job["lib"])
-  $0 = "fast-anything-verify" # the entry script's "if __FILE__ == $0" block must not run
+  $0 = "everything-fast-verify" # the entry script's "if __FILE__ == $0" block must not run
   load job["module_file"]
   receiver = job["owner"] == "Object" ? Object.new : Object.const_get(job["owner"].delete_suffix(".singleton_class"))
   owner = job["owner"] == "Object" ? Object : receiver.singleton_class
@@ -400,7 +400,7 @@ def cmd_verify(job, _argv)
              "passed" => 0, "failed" => 0, "failures" => [] }
   calls = []
   cases.each_with_index do |c, i|
-    args = FastAnything.dec(c["args"])
+    args = EverythingFast.dec(c["args"])
     calls << args
     err = nil
     begin
@@ -412,8 +412,8 @@ def cmd_verify(job, _argv)
       ok = !err.nil?
       expected = "raises #{c["raises"]}"
     else
-      want = FastAnything.dec(c["result"])
-      ok = err.nil? && FastAnything.same(want, got)
+      want = EverythingFast.dec(c["result"])
+      ok = err.nil? && EverythingFast.same(want, got)
       expected = show(want)
     end
     if ok

@@ -1,4 +1,4 @@
-//! Everything fast-anything knows about a project, kept in <project>/.fast/state.json.
+//! Everything everything-fast knows about a project, kept in <project>/.fast/state.json.
 
 use crate::backend::Lang;
 use crate::bench::BenchResult;
@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const GITIGNORE: &str = "# fast-anything: commit ports/*/src and Cargo.toml (your Rust ports); skip the rest\n\
+const GITIGNORE: &str = "# everything-fast: commit ports/*/src and Cargo.toml (your Rust ports); skip the rest\n\
 target/\nlib/\nbin/\nbackup/\nhook/\nchildren/\nrunner.*\nrecorder.*\nDescribe.java\n*.txt\njob-*.json\nprofile.*\n*.pprof\nverify.json\n*.jsonl\n*.meta.json\n*.log\njob-*.R\nstartup.R\nbridge.R\nRprof.out*\n*.rds\n";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -83,19 +83,19 @@ fn forms(source: &str) -> [String; 3] {
     [source.replacen("const ", "let ", 1), source.replacen("let ", "const ", 1), source]
 }
 
-/// The file without fast-anything's own marked blocks: an enabled Java, Go, C#, C/C++, PHP or
+/// The file without everything-fast's own marked blocks: an enabled Java, Go, C#, C/C++, PHP or
 /// Kotlin port puts one inside the function's body, and that isn't a change to the original.
 fn without_blocks(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     let mut inside = false;
     for line in text.split_inclusive('\n') {
-        if !inside && line.contains(">>> fast-anything: ") {
+        if !inside && line.contains(">>> everything-fast: ") {
             inside = true;
         }
         if !inside {
             out.push_str(line);
         }
-        if inside && line.contains("<<< fast-anything: ") {
+        if inside && line.contains("<<< everything-fast: ") {
             inside = false;
         }
     }
@@ -193,7 +193,7 @@ impl Ctx {
     }
 
     pub fn runtime(&self) -> Result<&str> {
-        self.state.runtime.as_deref().context("no scan yet: run  fast-anything scan -- python your_app.py  (or node)")
+        self.state.runtime.as_deref().context("no scan yet: run  everything-fast scan -- python your_app.py  (or node)")
     }
 
     pub fn lib_dir(&self) -> PathBuf {
@@ -214,7 +214,7 @@ impl Ctx {
         let names = || ports.keys().cloned().collect::<Vec<_>>().join(", ");
         match id {
             None => match ports.len() {
-                0 => bail!("nothing ported yet: run  fast-anything port"),
+                0 => bail!("nothing ported yet: run  everything-fast port"),
                 1 => Ok(ports.keys().next().cloned().unwrap_or_default()),
                 _ => bail!("which one? {}", names()),
             },
@@ -225,7 +225,7 @@ impl Ctx {
                     ports.values().filter(|p| p.func == id || p.id.ends_with(&suffix)).map(|p| &p.id).collect();
                 match hits.as_slice() {
                     [one] => Ok((*one).clone()),
-                    [] if ports.is_empty() => bail!("nothing ported yet: run  fast-anything port {id}"),
+                    [] if ports.is_empty() => bail!("nothing ported yet: run  everything-fast port {id}"),
                     [] => bail!("no port called {id} (have: {})", names()),
                     _ => bail!("{id} is ambiguous: {}", names()),
                 }
@@ -252,7 +252,7 @@ mod tests {
     fn blocks_in_the_body_are_not_changes() {
         let original = "static int lev(String a) {\n    return a.length();\n}\n";
         let kept = verbatim(original, &["static int lev(String a) {\n    return a.length();\n}"]);
-        let enabled = "static int lev(String a) {\n    // >>> fast-anything: Fuzzy.lev >>>\n    if (X.ON) return X.call(a);\n    // <<< fast-anything: Fuzzy.lev <<<\n    return a.length();\n}\n";
+        let enabled = "static int lev(String a) {\n    // >>> everything-fast: Fuzzy.lev >>>\n    if (X.ON) return X.call(a);\n    // <<< everything-fast: Fuzzy.lev <<<\n    return a.length();\n}\n";
         assert!(found(enabled, &kept[0]), "an enabled port isn't a change to the original");
         assert_eq!(verbatim(enabled, &["static int lev(String a) {\n    return a.length();\n}"]), kept);
         assert!(!found(&enabled.replace("a.length()", "a.length() + 1"), &kept[0]));

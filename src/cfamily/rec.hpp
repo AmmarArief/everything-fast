@@ -1,6 +1,6 @@
-// fast-anything recorder for C++ (C++14), force-included with -include for one run.
-#ifndef FAST_ANYTHING_REC_HPP
-#define FAST_ANYTHING_REC_HPP
+// everything-fast recorder for C++ (C++14), force-included with -include for one run.
+#ifndef EVERYTHING_FAST_REC_HPP
+#define EVERYTHING_FAST_REC_HPP
 #ifdef __cplusplus
 #include <algorithm>
 #include <array>
@@ -43,14 +43,14 @@ inline unsigned long long next() {
 }
 inline void save() {
     auto &s = st();
-    if (const char *path = std::getenv("FAST_ANYTHING_RECORD_OUT")) {
+    if (const char *path = std::getenv("EVERYTHING_FAST_RECORD_OUT")) {
         if (FILE *f = std::fopen(path, "wb")) {
             for (auto &l : s.kept) std::fprintf(f, "%s\n", l.c_str());
             for (auto &l : s.derived) std::fprintf(f, "%s\n", l.c_str());
             std::fclose(f);
         }
     }
-    if (const char *path = std::getenv("FAST_ANYTHING_RECORD_META")) {
+    if (const char *path = std::getenv("EVERYTHING_FAST_RECORD_META")) {
         if (FILE *f = std::fopen(path, "wb")) {
             std::fprintf(f, "{\"calls\":%lld,\"kept\":%zu,\"skipped\":%lld,\"unsupported\":[%s],\"original_ns\":%.3f}", s.calls, s.kept.size(), s.skipped,
                          s.skipped ? "\"a value JSON can't hold\"" : "", s.calls ? (double) s.nanos / (double) s.calls : 0.0);
@@ -64,14 +64,14 @@ inline bool &registered() {
 }
 inline bool derive_ok() {
     auto &s = st();
-    const char *d = std::getenv("FAST_ANYTHING_RECORD_DERIVE");
+    const char *d = std::getenv("EVERYTHING_FAST_RECORD_DERIVE");
     if (d && d[0] == '0') return false;
     if (!s.derive_started) s.derive_started = now();
     return s.derived.size() < 200 + s.edges && now() - s.derive_started < 3000000000LL;
 }
 inline bool edge_ok() {
     auto &s = st();
-    const char *d = std::getenv("FAST_ANYTHING_RECORD_DERIVE");
+    const char *d = std::getenv("EVERYTHING_FAST_RECORD_DERIVE");
     if (d && d[0] == '0') return false;
     if (!s.derive_started) s.derive_started = now();
     return s.edges < 100 && now() - s.derive_started < 1500000000LL;
@@ -264,7 +264,7 @@ template <class F, class... A> auto call(F f, const A &...a) -> decltype(f(a...)
         ~Reset() { st().inside = false; }
     } reset;
     if (!s.limit) {
-        const char *l = std::getenv("FAST_ANYTHING_RECORD_LIMIT");
+        const char *l = std::getenv("EVERYTHING_FAST_RECORD_LIMIT");
         s.limit = l && std::atoi(l) > 0 ? (size_t) std::atoi(l) : 500;
     }
     s.calls++;

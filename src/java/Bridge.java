@@ -1,7 +1,7 @@
 /*PACKAGE*/
 /*IMPORTS*/
-// fast-anything: calls the verified Rust port of /*ID*/. Generated; remove with  fast-anything disable /*ID*/
-// FAST_ANYTHING_DISABLE=1 runs the Java version instead. Add --enable-native-access=ALL-UNNAMED to silence Java's notice.
+// everything-fast: calls the verified Rust port of /*ID*/. Generated; remove with  everything-fast disable /*ID*/
+// EVERYTHING_FAST_DISABLE=1 runs the Java version instead. Add --enable-native-access=ALL-UNNAMED to silence Java's notice.
 final class /*CLASS*/ {
     static /*RET*/ type; // the original's return type, read back with reflection
     static final java.lang.reflect.Type TYPE;
@@ -11,7 +11,7 @@ final class /*CLASS*/ {
     static {
         java.lang.reflect.Type t = Object.class;
         java.lang.invoke.MethodHandle c = null, f = null;
-        if (System.getenv("FAST_ANYTHING_DISABLE") == null) {
+        if (System.getenv("EVERYTHING_FAST_DISABLE") == null) {
             try {
                 t = /*CLASS*/.class.getDeclaredField("type").getGenericType();
                 var linker = java.lang.foreign.Linker.nativeLinker();
@@ -41,7 +41,7 @@ final class /*CLASS*/ {
             byte[] bytes = out.reinterpret(n).toArray(java.lang.foreign.ValueLayout.JAVA_BYTE);
             FREE.invokeExact(out, n);
             var reply = (java.util.Map<?, ?>) Json.parse(new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
-            if (reply.containsKey("error")) throw new RuntimeException("fast-anything: " + reply.get("error"));
+            if (reply.containsKey("error")) throw new RuntimeException("everything-fast: " + reply.get("error"));
             return Json.convert(reply.get("ok"), TYPE);
         } catch (RuntimeException | Error e) {
             throw e;

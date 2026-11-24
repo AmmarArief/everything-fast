@@ -1,9 +1,9 @@
-"""fast-anything: profile and record inside multiprocessing workers too.
+"""everything-fast: profile and record inside multiprocessing workers too.
 
-While fast-anything profiles or records an app, it puts the folder with this file first on
+While everything-fast profiles or records an app, it puts the folder with this file first on
 PYTHONPATH, so every Python process the app starts loads it. Not meant to be used by hand.
 Each multiprocessing worker (fork, spawn or forkserver; Pool and ProcessPoolExecutor included)
-gets its own profiler or recorder and leaves its results in FAST_ANYTHING_CHILDREN. The app's own
+gets its own profiler or recorder and leaves its results in EVERYTHING_FAST_CHILDREN. The app's own
 sitecustomize, if it has one, still runs right after this.
 """
 
@@ -11,11 +11,11 @@ import os
 import sys
 
 
-def _fast_anything_watch_workers():
+def _everything_fast_watch_workers():
     import multiprocessing.process
 
     original = multiprocessing.process.BaseProcess._bootstrap
-    if getattr(original, "_fast_anything", False):
+    if getattr(original, "_everything_fast", False):
         return
 
     def _bootstrap(self, *args, **kwargs):
@@ -32,17 +32,17 @@ def _fast_anything_watch_workers():
             signal.signal(signal.SIGTERM, _on_term)
         state = None
         try:
-            state = sys.modules.get("_fast_anything_state")
+            state = sys.modules.get("_everything_fast_state")
             if state is None:  # a fresh interpreter (spawn, forkserver): load the runner
                 import importlib.util
 
-                spec = importlib.util.spec_from_file_location("_fast_anything_runner", os.environ["FAST_ANYTHING_RUNNER"])
+                spec = importlib.util.spec_from_file_location("_everything_fast_runner", os.environ["EVERYTHING_FAST_RUNNER"])
                 runner = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(runner)
                 state = runner.child_state()
             state.start()
         except Exception as e:  # never break the app's workers
-            sys.stderr.write("fast-anything: can't watch this worker: %r\n" % (e,))
+            sys.stderr.write("everything-fast: can't watch this worker: %r\n" % (e,))
             state = None
         try:
             return original(self, *args, **kwargs)
@@ -50,13 +50,13 @@ def _fast_anything_watch_workers():
             if state is not None:
                 state.finish()
 
-    _bootstrap._fast_anything = True
+    _bootstrap._everything_fast = True
     multiprocessing.process.BaseProcess._bootstrap = _bootstrap
     if os.name == "nt":
-        _fast_anything_graceful_pool_terminate()
+        _everything_fast_graceful_pool_terminate()
 
 
-def _fast_anything_graceful_pool_terminate():
+def _everything_fast_graceful_pool_terminate():
     """On Windows, Pool.terminate() (and `with Pool(...) as p:`) uses TerminateProcess(), which
     kills workers before BaseProcess._bootstrap's finally block can write their profile/recordings.
     When no tasks are still pending, close the pool and wait briefly for idle workers to exit on
@@ -68,7 +68,7 @@ def _fast_anything_graceful_pool_terminate():
     Pool = multiprocessing.pool.Pool
     original = Pool.terminate
     pool_close = Pool.close
-    if getattr(original, "_fast_anything", False):
+    if getattr(original, "_everything_fast", False):
         return
 
     grace = 2.0  # total wall-clock cap (seconds) so terminate() never hangs on a stuck worker
@@ -110,14 +110,14 @@ def _fast_anything_graceful_pool_terminate():
                             p.join(remaining)
         except Exception as e:
             if not sys.is_finalizing() and sys.stderr is not None:
-                sys.stderr.write("fast-anything: can't drain pool workers: %r\n" % (e,))
+                sys.stderr.write("everything-fast: can't drain pool workers: %r\n" % (e,))
         return original(self)
 
-    _terminate._fast_anything = True
+    _terminate._everything_fast = True
     Pool.terminate = _terminate
 
 
-def _fast_anything_chain():
+def _everything_fast_chain():
     """Run the sitecustomize this one hides, if there is one."""
     import importlib.util
     from importlib.machinery import PathFinder
@@ -128,6 +128,6 @@ def _fast_anything_chain():
         spec.loader.exec_module(importlib.util.module_from_spec(spec))
 
 
-if os.environ.get("FAST_ANYTHING_CHILDREN"):
-    _fast_anything_watch_workers()
-_fast_anything_chain()
+if os.environ.get("EVERYTHING_FAST_CHILDREN"):
+    _everything_fast_watch_workers()
+_everything_fast_chain()

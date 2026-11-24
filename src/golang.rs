@@ -1,4 +1,4 @@
-//! Go backend: apps run as  go run .  (or a package path, or a list of files). fast-anything builds
+//! Go backend: apps run as  go run .  (or a package path, or a list of files). everything-fast builds
 //! the binary itself, so timing never includes the compiler. Profiled with runtime/pprof, read with
 //! go/parser, and bridged with the Windows loader or dlopen through cgo elsewhere.
 
@@ -74,7 +74,7 @@ impl GoRun {
     fn parse(args: &[String]) -> Result<GoRun> {
         ensure!(
             args.first().map(String::as_str) == Some("run"),
-            "start the command with  go run  (e.g.  fast-anything scan -- go run .)"
+            "start the command with  go run  (e.g.  everything-fast scan -- go run .)"
         );
         let mut i = 1;
         let mut flags = Vec::new();
@@ -233,14 +233,14 @@ fn instrument(
     let mut patches = Patches::new(ctx)?;
     let text = fs::read_to_string(&main.path)?;
     let hooked =
-        native::insert_in_body(&text, "//", "hooks", "defer fastAnythingDone()", find_body("main", main.line))?;
-    let hooks = main_dir.join("fast_anything_hooks.go");
+        native::insert_in_body(&text, "//", "hooks", "defer everythingFastDone()", find_body("main", main.line))?;
+    let hooks = main_dir.join("everything_fast_hooks.go");
     patches.write(&hooks, HOOKS)?;
     patches.write(&main.path, &hooked)?;
     let mut created = vec![hooks];
     for (path, text) in extra {
         if path.extension().is_some_and(|e| e == "go")
-            && !fs::read_to_string(&path).is_ok_and(|t| t.contains(">>> fast-anything"))
+            && !fs::read_to_string(&path).is_ok_and(|t| t.contains(">>> everything-fast"))
         {
             created.push(path.clone());
         }
@@ -309,7 +309,7 @@ pub fn profile(ctx: &Ctx, go: &str, args: &[String]) -> Result<Profile> {
         Command::new(&bin)
             .args(&run.args)
             .current_dir(&ctx.root)
-            .env("FAST_ANYTHING_PPROF", &pprof)
+            .env("EVERYTHING_FAST_PPROF", &pprof)
             .env(DISABLE_ENV, "1")
             .stdin(Stdio::null()),
         "the app",
@@ -364,7 +364,7 @@ pub fn record(ctx: &Ctx, go: &str, args: &[String], hs: &Hotspot, out: &Path, li
         .map(|(i, p)| format!("a[{i}].({})", p.annotation.as_deref().unwrap_or("any")))
         .collect();
     let prologue = format!(
-        "if !fastAnythingRecInside {{\n\treturn fastAnythingRec([]any{{{args}}}, func(a []any) any {{ return {name}({casts}) }}).({ret})\n}}",
+        "if !everythingFastRecInside {{\n\treturn everythingFastRec([]any{{{args}}}, func(a []any) any {{ return {name}({casts}) }}).({ret})\n}}",
         args = arg_list(hs),
         name = hs.name,
         casts = casts.join(", "),
@@ -373,7 +373,7 @@ pub fn record(ctx: &Ctx, go: &str, args: &[String], hs: &Hotspot, out: &Path, li
     let patched =
         native::insert_in_body(&text, "//", &format!("recording {}", hs.id), &prologue, find_body(&hs.name, hs.line))?;
     let rec = REC.replace("/*PKG*/", &pkg_name(ctx, hs)?).replace("/*ID*/", &hs.id);
-    let rec_path = native::sibling(&file, "fast_anything_rec.go")?;
+    let rec_path = native::sibling(&file, "everything_fast_rec.go")?;
     let (mut patches, extra) = instrument(ctx, &funcs, &run, vec![(rec_path, rec), (file.clone(), patched)])?;
     let bin = build(ctx, go, &run, &extra);
     patches.restore()?;
@@ -384,9 +384,9 @@ pub fn record(ctx: &Ctx, go: &str, args: &[String], hs: &Hotspot, out: &Path, li
         Command::new(&bin)
             .args(&run.args)
             .current_dir(&ctx.root)
-            .env("FAST_ANYTHING_RECORD_OUT", out)
-            .env("FAST_ANYTHING_RECORD_META", &meta)
-            .env("FAST_ANYTHING_RECORD_LIMIT", limit.to_string())
+            .env("EVERYTHING_FAST_RECORD_OUT", out)
+            .env("EVERYTHING_FAST_RECORD_META", &meta)
+            .env("EVERYTHING_FAST_RECORD_LIMIT", limit.to_string())
             .env(DISABLE_ENV, "1")
             .stdin(Stdio::null()),
         "the app",
@@ -434,7 +434,7 @@ pub const FLAVOR: Flavor = Flavor {
     rules: &[
         "Go `int` is `i64` and wraps on overflow: use `wrapping_*` where the original can overflow.",
         "Go strings are UTF-8 bytes: `len(s)` and `s[i]` are bytes, `for _, r := range s` and `[]rune(s)` are characters. Do the same in Rust.",
-        "A nil slice or map arrives (and may be returned) as an empty Vec or HashMap: fast-anything treats them as equal.",
+        "A nil slice or map arrives (and may be returned) as an empty Vec or HashMap: everything-fast treats them as equal.",
         "Map iteration order is random in Go: return results in the order the original does when it's deterministic.",
     ],
 };
@@ -456,10 +456,10 @@ fn suffix(port: &Port) -> String {
 fn bridge_files(file: &Path, port: &Port) -> Result<[PathBuf; 4]> {
     let s = suffix(port);
     Ok([
-        native::sibling(file, &format!("fast_anything_{s}.go"))?,
-        native::sibling(file, &format!("fast_anything_{s}_windows.go"))?,
-        native::sibling(file, &format!("fast_anything_{s}_unix.go"))?,
-        native::sibling(file, &format!("fast_anything_{s}_nocgo.go"))?,
+        native::sibling(file, &format!("everything_fast_{s}.go"))?,
+        native::sibling(file, &format!("everything_fast_{s}_windows.go"))?,
+        native::sibling(file, &format!("everything_fast_{s}_unix.go"))?,
+        native::sibling(file, &format!("everything_fast_{s}_nocgo.go"))?,
     ])
 }
 

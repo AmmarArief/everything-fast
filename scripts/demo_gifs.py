@@ -1,4 +1,4 @@
-"""Renders the README demo GIFs from transcripts of real fast-anything runs.
+"""Renders the README demo GIFs from transcripts of real everything-fast runs.
 
     python scripts/demo_gifs.py      (needs Pillow; Windows fonts by default, set FA_FONT/FA_SYMBOL_FONT elsewhere)
 """
@@ -47,7 +47,7 @@ def render(lines, width, height, cursor=False):
     d.rectangle([0, 0, width, BAR], fill=CHROME)
     for i, c in enumerate([(255, 95, 86), (255, 189, 46), (39, 201, 63)]):
         d.ellipse([16 + i * 22, 11, 28 + i * 22, 23], fill=c)
-    d.text((width / 2, BAR / 2), "fast-anything", font=font, fill=COLORS["d"], anchor="mm")
+    d.text((width / 2, BAR / 2), "everything-fast", font=font, fill=COLORS["d"], anchor="mm")
     y = BAR + PAD - 4
     last_x = PAD
     for line in lines:
@@ -112,8 +112,8 @@ SYMBOL_SPIN = "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 SYMBOLS.update(SYMBOL_SPIN)
 
 GO = [
-    ("type", "fast-anything go --agent claude -- python app.py"),
-    ("out", "[o]⚡ fast-anything[/] [d]v0.1.0[/]"),
+    ("type", "everything-fast go --agent claude -- python app.py"),
+    ("out", "[o]⚡ everything-fast[/] [d]v0.1.0[/]"),
     ("spin", "profiling [b]python app.py[/]", 1.2),
     ("out", "[g]✓[/] [b]python app.py[/] ran in 21.73s [d](under the profiler)[/]"),
     ("out", ""),
@@ -138,7 +138,7 @@ GO = [
 ]
 
 VERIFY = [
-    ("type", "fast-anything verify"),
+    ("type", "everything-fast verify"),
     ("spin", "building [b]fa_fuzzy_levenshtein[/] [d](release)[/]", 0.6),
     ("spin", "replaying 500 recorded calls against the Rust port", 0.6),
     ("out", "[r]✗[/] 148/500 recorded calls don't match", 250),
@@ -150,7 +150,7 @@ VERIFY = [
     ("out", "      got      [r]14[/]", 2200),
     ("out", ""),
     ("out", "[d]# the port compared bytes, Python compares characters. Fixed:[/]", 1500),
-    ("type", "fast-anything verify"),
+    ("type", "everything-fast verify"),
     ("spin", "building [b]fa_fuzzy_levenshtein[/] [d](release)[/]", 0.6),
     ("spin", "replaying 500 recorded calls against the Rust port", 0.6),
     ("out", "[g]✓[/] 500/500 recorded calls give the same result", 300),

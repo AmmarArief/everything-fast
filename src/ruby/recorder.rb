@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-# Shared value helpers for fast-anything's Ruby side, and the call recorder
-# (preloaded with "ruby -r" when FAST_ANYTHING_RECORD_OUT is set). Not meant to be used by hand.
+# Shared value helpers for everything-fast's Ruby side, and the call recorder
+# (preloaded with "ruby -r" when EVERYTHING_FAST_RECORD_OUT is set). Not meant to be used by hand.
 require "json"
 
-module FastAnything
+module EverythingFast
   class Unsupported < StandardError; end
 
   module_function
@@ -55,13 +55,13 @@ module FastAnything
   end
 end
 
-if ENV["FAST_ANYTHING_RECORD_OUT"]
-  module FastAnything
+if ENV["EVERYTHING_FAST_RECORD_OUT"]
+  module EverythingFast
     @kept = []
     @calls = 0
     @skipped = 0
     @unsupported = {}
-    @limit = Integer(ENV.fetch("FAST_ANYTHING_RECORD_LIMIT", "500"))
+    @limit = Integer(ENV.fetch("EVERYTHING_FAST_RECORD_LIMIT", "500"))
     @rng = Random.new(0xFA57)
 
     class << self
@@ -113,19 +113,19 @@ if ENV["FAST_ANYTHING_RECORD_OUT"]
       end
 
       def save
-        File.write(ENV.fetch("FAST_ANYTHING_RECORD_OUT"), @kept.map { |c| JSON.generate(c) + "\n" }.join)
-        File.write(ENV.fetch("FAST_ANYTHING_RECORD_META"),
+        File.write(ENV.fetch("EVERYTHING_FAST_RECORD_OUT"), @kept.map { |c| JSON.generate(c) + "\n" }.join)
+        File.write(ENV.fetch("EVERYTHING_FAST_RECORD_META"),
                    JSON.generate({ "calls" => @calls, "kept" => @kept.length, "skipped" => @skipped, "unsupported" => @unsupported.keys, "mutates" => @mutates || false }))
       end
     end
   end
 
-  $__fast_anything_wrap = lambda do |owner, name|
+  $__everything_fast_wrap = lambda do |owner, name|
     original = owner.instance_method(name)
     was_private = owner.private_method_defined?(name)
-    owner.send(:define_method, name) { |*args, &blk| FastAnything.record(original, self, args, blk) }
+    owner.send(:define_method, name) { |*args, &blk| EverythingFast.record(original, self, args, blk) }
     owner.send(:private, name) if was_private
   end
 
-  at_exit { FastAnything.save }
+  at_exit { EverythingFast.save }
 end

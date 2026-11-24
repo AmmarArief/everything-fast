@@ -1,7 +1,7 @@
 // Publishes the npm packages from release binaries:
-//   node npm/publish.mjs <version> <dir with bin-<rust target>/fast-anything[.exe]> [--dry-run] [--stage]
+//   node npm/publish.mjs <version> <dir with bin-<rust target>/everything-fast[.exe]> [--dry-run] [--stage]
 // --stage: npm stage publish, for tokens that may only stage (each version is then approved with 2FA on npmjs.com).
-// One package per platform (@el4cteo/fast-anything-<os>-<cpu>) plus the @el4cteo/fast-anything launcher.
+// One package per platform (everything-fast-<os>-<cpu>) plus the everything-fast launcher.
 import { execFileSync } from "node:child_process";
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -23,7 +23,7 @@ const TARGETS = {
   "aarch64-apple-darwin": ["darwin", "arm64"],
   "x86_64-apple-darwin": ["darwin", "x64"],
 };
-const main = JSON.parse(readFileSync(path.join(here, "fast-anything", "package.json"), "utf8"));
+const main = JSON.parse(readFileSync(path.join(here, "everything-fast", "package.json"), "utf8"));
 const publish = (dir) => {
   const provenance = process.env.GITHUB_ACTIONS ? ["--provenance"] : [];
   const args = [...(stage ? ["stage"] : []), "publish", "--access", "public", ...(dry ? ["--dry-run"] : provenance)];
@@ -31,18 +31,18 @@ const publish = (dir) => {
 };
 
 for (const [target, [os, cpu]] of Object.entries(TARGETS)) {
-  const exe = os === "win32" ? "fast-anything.exe" : "fast-anything";
+  const exe = os === "win32" ? "everything-fast.exe" : "everything-fast";
   const src = path.join(dist, `bin-${target}`, exe);
   if (!existsSync(src)) throw new Error(`missing ${src}`);
-  const name = `@el4cteo/fast-anything-${os}-${cpu}`;
-  const dir = path.join(out, `fast-anything-${os}-${cpu}`);
+  const name = `everything-fast-${os}-${cpu}`;
+  const dir = path.join(out, `everything-fast-${os}-${cpu}`);
   mkdirSync(path.join(dir, "bin"), { recursive: true });
   copyFileSync(src, path.join(dir, "bin", exe));
   chmodSync(path.join(dir, "bin", exe), 0o755);
   const pkg = {
     name,
     version,
-    description: `The ${os}-${cpu} binary for fast-anything.`,
+    description: `The ${os}-${cpu} binary for everything-fast.`,
     repository: main.repository,
     license: "MIT",
     os: [os],
@@ -54,9 +54,9 @@ for (const [target, [os, cpu]] of Object.entries(TARGETS)) {
   publish(dir);
 }
 
-const dir = path.join(out, "fast-anything");
+const dir = path.join(out, "everything-fast");
 mkdirSync(path.join(dir, "bin"), { recursive: true });
-copyFileSync(path.join(here, "fast-anything", "bin", "fast-anything.js"), path.join(dir, "bin", "fast-anything.js"));
+copyFileSync(path.join(here, "everything-fast", "bin", "everything-fast.js"), path.join(dir, "bin", "everything-fast.js"));
 copyFileSync(path.join(root, "README.md"), path.join(dir, "README.md"));
 copyFileSync(path.join(root, "LICENSE"), path.join(dir, "LICENSE"));
 main.version = version;

@@ -1,6 +1,6 @@
-"""Python side of fast-anything.
+"""Python side of everything-fast.
 
-The fast-anything CLI copies this file to <project>/.fast/runner.py and runs it as
+The everything-fast CLI copies this file to <project>/.fast/runner.py and runs it as
     python runner.py <mode> <job.json> -- <the app's python arguments>
 Modes: profile, record, verify. Not meant to be run by hand.
 """
@@ -19,7 +19,7 @@ import runpy
 import sys
 import time
 
-DISABLE_ENV = "FAST_ANYTHING_DISABLE"
+DISABLE_ENV = "EVERYTHING_FAST_DISABLE"
 SKIP_DIRS = {".fast", ".git", "venv", ".venv", "env", ".env", "site-packages", "dist-packages",
              "node_modules", "__pycache__", "build", "dist", ".tox", ".nox"}
 # Process state used without a call: `os.environ["X"]` is as much a hidden input as `os.getenv("X")`,
@@ -200,14 +200,14 @@ def parse_target(argv):
     while args and args[0].startswith("-") and args[0] != "-m":
         flag = args.pop(0)
         if flag == "-c":
-            sys.exit("fast-anything: 'python -c' isn't supported; point it at a script or a module")
+            sys.exit("everything-fast: 'python -c' isn't supported; point it at a script or a module")
         if flag in ("-X", "-W") and args:
             args.pop(0)
     if not args:
-        sys.exit("fast-anything: give the app as 'python script.py ...' or 'python -m package ...'")
+        sys.exit("everything-fast: give the app as 'python script.py ...' or 'python -m package ...'")
     if args[0] == "-m":
         if len(args) < 2:
-            sys.exit("fast-anything: -m needs a module name")
+            sys.exit("everything-fast: -m needs a module name")
         return "module", args[1], args[2:]
     return "script", args[0], args[1:]
 
@@ -687,7 +687,7 @@ def cmd_profile(job, argv):
     entry, base = prepare_path(kind, target)
     root = job["root"]
     prof = cProfile.Profile()
-    sys.modules["_fast_anything_state"] = ChildState("profile", os.environ.get("FAST_ANYTHING_CHILDREN", ""))
+    sys.modules["_everything_fast_state"] = ChildState("profile", os.environ.get("EVERYTHING_FAST_CHILDREN", ""))
     start = time.perf_counter()
     prof.enable()
     try:
@@ -695,7 +695,7 @@ def cmd_profile(job, argv):
     finally:
         prof.disable()
     wall = time.perf_counter() - start
-    del sys.modules["_fast_anything_state"]
+    del sys.modules["_everything_fast_state"]
 
     stats = pstats.Stats(prof)
     for worker in children(".prof"):  # what the app's multiprocessing workers ran
@@ -783,10 +783,10 @@ class Recorder:
     def install(self, job, main_module=None):
         """Wrap the function where the app looks it up."""
         if job["module"] == "__main__":
-            # the entry script wraps the function itself, via a block fast-anything inserted
+            # the entry script wraps the function itself, via a block everything-fast inserted
             import builtins
 
-            builtins.__fast_anything_wrap__ = self.wrap
+            builtins.__everything_fast_wrap__ = self.wrap
             if main_module is None:
                 return
             module = main_module  # a spawned worker: the entry script is already imported
@@ -822,7 +822,7 @@ class Recorder:
 
 
 class ChildState:
-    """What a multiprocessing worker does while fast-anything profiles or records the app: its own
+    """What a multiprocessing worker does while everything-fast profiles or records the app: its own
     profiler or recorder, written to `out_dir` when the worker ends."""
 
     def __init__(self, mode, out_dir, recorder=None):
@@ -857,22 +857,22 @@ class ChildState:
 
 def child_state():
     """The ChildState for a worker started as a fresh interpreter (spawn, forkserver)."""
-    with open(os.environ["FAST_ANYTHING_JOB"], encoding="utf-8") as f:
+    with open(os.environ["EVERYTHING_FAST_JOB"], encoding="utf-8") as f:
         job = json.load(f)
-    mode, out_dir = os.environ["FAST_ANYTHING_MODE"], os.environ["FAST_ANYTHING_CHILDREN"]
+    mode, out_dir = os.environ["EVERYTHING_FAST_MODE"], os.environ["EVERYTHING_FAST_CHILDREN"]
     recorder = None
     if mode == "record":
         os.environ[DISABLE_ENV] = "1"
         recorder = Recorder(int(job["limit"]), os.getpid())
         recorder.install(job, sys.modules.get("__main__"))
     state = ChildState(mode, out_dir, recorder)
-    sys.modules["_fast_anything_state"] = state
+    sys.modules["_everything_fast_state"] = state
     return state
 
 
 def children(suffix):
     """Files the app's multiprocessing workers left (see ChildState)."""
-    out_dir = os.environ.get("FAST_ANYTHING_CHILDREN")
+    out_dir = os.environ.get("EVERYTHING_FAST_CHILDREN")
     if not out_dir or not os.path.isdir(out_dir):
         return []
     return sorted(os.path.join(out_dir, n) for n in os.listdir(out_dir) if n.endswith(suffix))
@@ -884,9 +884,9 @@ def cmd_record(job, argv):
     os.environ[DISABLE_ENV] = "1"  # always record the original Python
     recorder = Recorder(int(job["limit"]), 0xFA57)
     recorder.install(job)
-    sys.modules["_fast_anything_state"] = ChildState("record", os.environ.get("FAST_ANYTHING_CHILDREN", ""), recorder)
+    sys.modules["_everything_fast_state"] = ChildState("record", os.environ.get("EVERYTHING_FAST_CHILDREN", ""), recorder)
     run_target(kind, target, rest)
-    del sys.modules["_fast_anything_state"]
+    del sys.modules["_everything_fast_state"]
     for out in children(".jsonl"):
         try:
             recorder.absorb(out, out[: -len(".jsonl")] + ".meta.json")
@@ -902,7 +902,7 @@ def cmd_verify(job, _argv):
     fast = getattr(importlib.import_module(job["ext"]), job["func"])
     if job["module"] == "__main__":
         # import the entry script under another name: its if __name__ == "__main__" block won't run
-        spec = importlib.util.spec_from_file_location("_fast_anything_entry", job["module_file"])
+        spec = importlib.util.spec_from_file_location("_everything_fast_entry", job["module_file"])
         entry = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = entry
         spec.loader.exec_module(entry)

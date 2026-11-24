@@ -1,15 +1,10 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/AmmarArief/everything-fast/main/docs/assets/wordmark.png" alt="fast-anything" width="520">
+  <img src="https://raw.githubusercontent.com/AmmarArief/everything-fast/main/docs/assets/wordmark.png" alt="everything-fast" width="520">
 </p>
 
-<p align="center"><b>Don't rewrite it in Rust. Rewrite the 5% that's slow.</b></p>
+<p align="center"><b>Don't rewrite it all. Rewrite the 5% that's slow.</b></p>
 
 <p align="center">
-</p>
-
-<p align="center">
-  <a href="https://www.npmjs.com/package/@el4cteo/fast-anything"><img src="https://img.shields.io/npm/v/@el4cteo/fast-anything?color=f74c00&label=npm" alt="npm"></a>
-  <a href="https://crates.io/crates/fast-anything"><img src="https://img.shields.io/crates/v/fast-anything?color=f74c00" alt="crates.io"></a>
   <a href="https://github.com/AmmarArief/everything-fast/actions/workflows/ci.yml"><img src="https://github.com/AmmarArief/everything-fast/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/Python%20%C2%B7%20Node%20%C2%B7%20TypeScript%20%C2%B7%20Ruby%20%C2%B7%20Java%20%C2%B7%20Kotlin%20%C2%B7%20Go%20%C2%B7%20PHP%20%C2%B7%20C%20%C2%B7%20C%2B%2B%20%C2%B7%20C%23%20%C2%B7%20R-2563eb" alt="Python, Node, TypeScript, Ruby, Java, Kotlin, Go, PHP, C, C++, C#, R">
   <img src="https://img.shields.io/badge/Claude%20Code-plugin-d97757" alt="Claude Code plugin">
@@ -19,14 +14,16 @@
 
 Rewriting a whole app in Rust costs months, minute-long compiles and gigabytes of `target/`. Most of the runtime sits in a few functions anyway.
 
-**fast-anything** finds those functions, has your coding agent port *only them* to Rust, proves the port gives the same results on real recorded calls, and swaps it in. One command, fully reversible.
+**everything-fast** finds those functions, has your coding agent port *only them* to Rust, proves the port gives the same results on real recorded calls, and swaps it in. One command, fully reversible.
 
-<p align="center"><img src="https://raw.githubusercontent.com/AmmarArief/everything-fast/main/docs/assets/demo.gif" alt="fast-anything go --agent claude -- python app.py" width="820"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/AmmarArief/everything-fast/main/docs/assets/demo.gif" alt="everything-fast go --agent claude -- python app.py" width="820"></p>
 
 ## Install
 
 ```sh
-npm i -g @el4cteo/fast-anything      # or: cargo install fast-anything
+cargo build --release                # binary: target/release/everything-fast
+cargo install --path .               # or put it on your PATH
+# once the npm package is published: npm i -g everything-fast
 ```
 
 Ports are compiled with your Rust toolchain ([rustup](https://rustup.rs)).
@@ -34,7 +31,7 @@ Ports are compiled with your Rust toolchain ([rustup](https://rustup.rs)).
 ## Use
 
 ```sh
-fast-anything go --agent claude -- python app.py     # or: -- node app.ts / bun app.ts / deno run -A app.ts / ruby app.rb / java App.java / mvn exec:java / gradle run / go run . / php app.php / clang -O2 main.c / Rscript app.R
+everything-fast go --agent claude -- python app.py     # or: -- node app.ts / bun app.ts / deno run -A app.ts / ruby app.rb / java App.java / mvn exec:java / gradle run / go run . / php app.php / clang -O2 main.c / Rscript app.R
 ```
 
 Or step by step:
@@ -55,7 +52,7 @@ Or step by step:
 
 <p align="center"><img src="https://raw.githubusercontent.com/AmmarArief/everything-fast/main/docs/assets/verify.gif" alt="verify catches a wrong port" width="820"></p>
 
-That port looked right but compared bytes instead of characters. 148 of 500 real calls caught it. On top of the recorded calls, fast-anything derives extra cases and lets the original answer them: edge cases (NaN, ±infinity, -0.0, zero and ±1, non-ASCII text, empty and up to 16× bigger inputs) and shrunk inputs (tiny and random slices). Nothing is enabled until every case matches: same values (floats within 1e-9), errors where the original errors. A port that is right but slower per call than the original (calling into Rust costs more than the work saved) isn't enabled either. `FAST_ANYTHING_DISABLE=1` runs the original any time.
+That port looked right but compared bytes instead of characters. 148 of 500 real calls caught it. On top of the recorded calls, everything-fast derives extra cases and lets the original answer them: edge cases (NaN, ±infinity, -0.0, zero and ±1, non-ASCII text, empty and up to 16× bigger inputs) and shrunk inputs (tiny and random slices). Nothing is enabled until every case matches: same values (floats within 1e-9), errors where the original errors. A port that is right but slower per call than the original (calling into Rust costs more than the work saved) isn't enabled either. `EVERYTHING_FAST_DISABLE=1` runs the original any time.
 
 ## Results
 
@@ -73,19 +70,19 @@ Real runs on an i5-10500, Windows 11 (C and C++: a 4-core GitHub Actions Linux r
 | C mandelbrot (8 zoom levels) | 431ms | **127ms, 3.4×** |
 | C++ fuzzy dedupe (6,000 names) | 3.02s | **1.09s, 2.7×** |
 
-fast-anything ports the outermost loop it can, not the tiny function called inside it, so the app crosses into Rust once instead of millions of times. Porting only the inner `levenshtein` gave 35× and 1.9×.
+everything-fast ports the outermost loop it can, not the tiny function called inside it, so the app crosses into Rust once instead of millions of times. Porting only the inner `levenshtein` gave 35× and 1.9×.
 
 ## Why not rewrite it all?
 
 - **Compile time**: each port is a one-function crate. Seconds, not minutes.
-- **Cache**: every port shares one `.fast/target`. Delete it whenever you like (`fast-anything clean`).
+- **Cache**: every port shares one `.fast/target`. Delete it whenever you like (`everything-fast clean`).
 - **Risk**: your code stays as it is. Rust is opt-in per function, checked against real behavior.
 
 ## Agents
 
-- **Claude Code plugin**: `/plugin marketplace add AmmarArief/everything-fast`, then `/plugin install fast-anything@fast-anything` and `/fast-anything:fast python app.py`
-- **MCP server** (Claude Code, Codex, Cursor…), built into the binary: `claude mcp add fast-anything -- fast-anything mcp`. 8 tools: `fast_scan`, `fast_port`, `fast_verify`, `fast_enable`, `fast_disable`, `fast_bench`, `fast_report`, `fast_status`.
-- **Skill**: [`skills/fast-anything`](skills/fast-anything/SKILL.md) teaches any agent the loop.
+- **Claude Code plugin**: `/plugin marketplace add AmmarArief/everything-fast`, then `/plugin install everything-fast@everything-fast` and `/everything-fast:fast python app.py`
+- **MCP server** (Claude Code, Codex, Cursor…), built into the binary: `claude mcp add everything-fast -- everything-fast mcp`. 8 tools: `everything_scan`, `everything_port`, `everything_verify`, `everything_enable`, `everything_disable`, `everything_bench`, `everything_report`, `everything_status`.
+- **Skill**: [`skills/everything-fast`](skills/everything-fast/SKILL.md) teaches any agent the loop.
 
 ## Languages
 
@@ -104,10 +101,10 @@ fast-anything ports the outermost loop it can, not the tiny function called insi
 
 It ports top-level, deterministic functions that take plain data (numbers, strings, lists, dicts, typed arrays…), including ones in your entry script when its main code sits under `if __name__ == "__main__":` (or `if __FILE__ == $0`, or `if (import.meta.main)` / `if (require.main === module)`). In Python that means module-level functions and `@staticmethod`s (dataclasses, NamedTuples and numeric NumPy arrays count as plain data), in Java, C# and PHP static methods (and PHP functions), in Go plain functions, in C and C++ free functions and static methods. `scan` says why anything else can't move yet.
 
-With Intel oneAPI on Windows, run fast-anything from a shell where `setvars.bat` ran (it sets up the linker). SYCL kernels run on the device and aren't ported; with `-fsycl`, only host functions are profiled and ported.
+With Intel oneAPI on Windows, run everything-fast from a shell where `setvars.bat` ran (it sets up the linker). SYCL kernels run on the device and aren't ported; with `-fsycl`, only host functions are profiled and ported.
 
-Ruby, Java, Go, PHP, C, C++, C# and R need no headers, bindings or extra tools: the port is a plain Rust library with one C entry point taking and returning JSON, and fast-anything replays the recorded calls against it directly. Any language that can call C can use that bridge.
+Ruby, Java, Go, PHP, C, C++, C# and R need no headers, bindings or extra tools: the port is a plain Rust library with one C entry point taking and returning JSON, and everything-fast replays the recorded calls against it directly. Any language that can call C can use that bridge.
 
 ## License
 
-MIT
+MIT. Original work © 2026 EL4CTEO; modifications in this repository © 2026 M. Ammar R. Arief. The upstream copyright notice is kept in [`LICENSE`](LICENSE), as MIT requires.

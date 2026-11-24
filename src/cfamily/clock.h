@@ -1,4 +1,4 @@
-/* fast-anything: a monotonic clock in nanoseconds, for the profiler and the recorder. */
+/* everything-fast: a monotonic clock in nanoseconds, for the profiler and the recorder. */
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN

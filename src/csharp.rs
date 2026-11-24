@@ -1,4 +1,4 @@
-//! C# / .NET backend: apps run as  dotnet run  (an SDK-style project). fast-anything builds the
+//! C# / .NET backend: apps run as  dotnet run  (an SDK-style project). everything-fast builds the
 //! project once and runs the built app itself, profiled with the runtime's own EventPipe sampler
 //! (no tools to install), reads the sources with Roslyn, and calls the port through the C bridge
 //! with NativeLibrary. A small helper (src/csharp/Program.cs) is built once per machine.
@@ -48,11 +48,11 @@ struct DotnetRun {
 impl DotnetRun {
     fn parse(args: &[String]) -> Result<DotnetRun> {
         let usage =
-            "run the app as a project:  fast-anything scan -- dotnet run -c Release  (or --project path/App.csproj)";
+            "run the app as a project:  everything-fast scan -- dotnet run -c Release  (or --project path/App.csproj)";
         ensure!(
             args.first().map(String::as_str) != Some("test"),
             "dotnet test runs your code in a separate testhost process, which isn't profiled. Scan the app itself, or a \
-             small console project that calls the code under test with real input:\n  fast-anything scan -- dotnet run -c Release --project path/App.csproj"
+             small console project that calls the code under test with real input:\n  everything-fast scan -- dotnet run -c Release --project path/App.csproj"
         );
         ensure!(args.first().map(String::as_str) == Some("run"), "{usage}");
         let mut run = DotnetRun::default();
@@ -178,7 +178,7 @@ fn cache_dir() -> PathBuf {
         .map(PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".cache")))
         .unwrap_or_else(std::env::temp_dir);
-    base.join("fast-anything")
+    base.join("everything-fast")
 }
 
 /// The helper, built on first use (it needs NuGet once, for Roslyn and TraceEvent).
@@ -186,7 +186,7 @@ fn tools(dotnet: &str) -> Result<PathBuf> {
     let mut h = std::collections::hash_map::DefaultHasher::new();
     (TOOLS_PROJECT, TOOLS_PROGRAM).hash(&mut h);
     let dir = cache_dir().join(format!("cs-tools-{:016x}", h.finish()));
-    let dll = dir.join("out").join("FastAnythingTools.dll");
+    let dll = dir.join("out").join("EverythingFastTools.dll");
     if dll.exists() {
         return Ok(dll);
     }
@@ -234,7 +234,7 @@ fn source_files(dir: &Path) -> Vec<PathBuf> {
                 if !name.starts_with('.') && !["bin", "obj", "node_modules", "target"].contains(&name.as_str()) {
                     stack.push(p);
                 }
-            } else if name.ends_with(".cs") && !name.starts_with("FastAnything") {
+            } else if name.ends_with(".cs") && !name.starts_with("EverythingFast") {
                 out.push(p);
             }
         }
@@ -350,7 +350,7 @@ pub fn profile(ctx: &Ctx, dotnet: &str, args: &[String], duration: Option<f64>) 
             Some(theirs) => std::env::join_paths([hook.into_os_string(), theirs])?,
             None => hook.into_os_string(),
         };
-        cmd.env("DOTNET_STARTUP_HOOKS", hooks).env("FAST_ANYTHING_STOP_AFTER_MS", ((d * 1000.0) as u64).to_string());
+        cmd.env("DOTNET_STARTUP_HOOKS", hooks).env("EVERYTHING_FAST_STOP_AFTER_MS", ((d * 1000.0) as u64).to_string());
     }
     let started = Instant::now();
     let (out, stopped) = util::output_for(
@@ -555,7 +555,7 @@ fn record_prologue(hs: &Hotspot) -> String {
     let types: Vec<String> = hs.params.iter().map(|p| format!("typeof({})", ty(p))).collect();
     let casts: Vec<String> = hs.params.iter().enumerate().map(|(i, p)| format!("({}) __faA[{i}]", ty(p))).collect();
     format!(
-        "#nullable disable\nif (!global::FastAnythingRec.Inside)\n{{\n    return ({ret}) global::FastAnythingRec.Record({args}, new global::System.Type[] {{ {types} }}, __faA => {name}({casts}));\n}}\n#nullable restore",
+        "#nullable disable\nif (!global::EverythingFastRec.Inside)\n{{\n    return ({ret}) global::EverythingFastRec.Record({args}, new global::System.Type[] {{ {types} }}, __faA => {name}({casts}));\n}}\n#nullable restore",
         ret = ret(hs),
         args = args_array(hs),
         types = types.join(", "),
@@ -578,15 +578,15 @@ pub fn record(ctx: &Ctx, dotnet: &str, args: &[String], hs: &Hotspot, out: &Path
     )?;
     let meta = out.with_extension("meta.json");
     let mut patches = Patches::new(ctx)?;
-    patches.write(&native::sibling(&file, "FastAnythingRec.cs")?, &rec)?;
+    patches.write(&native::sibling(&file, "EverythingFastRec.cs")?, &rec)?;
     patches.write(&file, &patched)?;
     let result = build(ctx, dotnet, &run).and_then(|dll| {
         output(
             app_command(dotnet, &dll, &run.args)
                 .current_dir(&ctx.root)
-                .env("FAST_ANYTHING_RECORD_OUT", out)
-                .env("FAST_ANYTHING_RECORD_META", &meta)
-                .env("FAST_ANYTHING_RECORD_LIMIT", limit.to_string())
+                .env("EVERYTHING_FAST_RECORD_OUT", out)
+                .env("EVERYTHING_FAST_RECORD_META", &meta)
+                .env("EVERYTHING_FAST_RECORD_LIMIT", limit.to_string())
                 .env(DISABLE_ENV, "1")
                 .stdin(Stdio::null()),
             dotnet,
@@ -663,7 +663,7 @@ pub fn verify(ctx: &Ctx, port: &Port) -> Result<Verify> {
 // ------------------------------------------------------------------ the bridge
 
 fn bridge_class(port: &Port) -> String {
-    format!("FastAnything_{}", util::slug(&port.id))
+    format!("EverythingFast_{}", util::slug(&port.id))
 }
 
 fn hotspot_of<'a>(ctx: &'a Ctx, port: &Port) -> Result<&'a Hotspot> {

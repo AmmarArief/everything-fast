@@ -1,4 +1,4 @@
-# fast-anything's R side. The CLI copies this file to <project>/.fast/runner.R and runs it as
+# everything-fast's R side. The CLI copies this file to <project>/.fast/runner.R and runs it as
 #   Rscript runner.R <mode> <job.R>
 # where job.R sets `job`. Modes: report (Rprof output -> profile.json), verify. Base R only; not
 # meant to be run by hand.
@@ -186,7 +186,7 @@ variants <- function(v) {
 }
 
 if (mode == "verify") {
-  Sys.setenv(FAST_ANYTHING_DISABLE = "1")  # the original R, even if the port is switched on
+  Sys.setenv(EVERYTHING_FAST_DISABLE = "1")  # the original R, even if the port is switched on
   env <- new.env(parent = globalenv())
   sys.source(job$module_file, envir = env, keep.source = FALSE)
   original <- get(job$func, envir = env)

@@ -1,4 +1,4 @@
-// Go side of fast-anything's scan: reads the module with go/parser and describes every function.
+// Go side of everything-fast's scan: reads the module with go/parser and describes every function.
 // The CLI runs it as  go run describe.go <module root> <out.json>. Not meant to be run by hand.
 package main
 
@@ -94,7 +94,7 @@ func main() {
 			}
 			return nil
 		}
-		if !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") || strings.HasPrefix(d.Name(), "fast_anything") {
+		if !strings.HasSuffix(p, ".go") || strings.HasSuffix(p, "_test.go") || strings.HasPrefix(d.Name(), "everything_fast") {
 			return nil
 		}
 		src, err := os.ReadFile(p)

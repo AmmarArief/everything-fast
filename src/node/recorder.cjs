@@ -1,10 +1,10 @@
-// fast-anything call recorder, preloaded with "node --require". Not meant to be used by hand.
+// everything-fast call recorder, preloaded with "node --require". Not meant to be used by hand.
 "use strict";
 const fs = require("node:fs");
 
-const out = process.env.FAST_ANYTHING_RECORD_OUT;
-const meta = process.env.FAST_ANYTHING_RECORD_META;
-const limit = Number(process.env.FAST_ANYTHING_RECORD_LIMIT || 500);
+const out = process.env.EVERYTHING_FAST_RECORD_OUT;
+const meta = process.env.EVERYTHING_FAST_RECORD_META;
+const limit = Number(process.env.EVERYTHING_FAST_RECORD_LIMIT || 500);
 const kept = [];
 const unsupported = new Set();
 let mutates = false;
@@ -38,7 +38,7 @@ function store(slot, c) {
   else kept[slot % limit] = c;
 }
 
-globalThis.__fastAnythingWrap = (fn) =>
+globalThis.__everythingFastWrap = (fn) =>
   function (...args) {
     calls++;
     const slot = kept.length < limit ? kept.length : rand(calls);

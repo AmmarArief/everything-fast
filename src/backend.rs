@@ -54,10 +54,10 @@ pub struct Recording {
 fn wrapper_hint(program: &str) -> Option<&'static str> {
     Some(match crate::util::program_stem(program).as_str() {
         "tsx" | "ts-node" | "npx" => {
-            "Node.js 22.6+ runs TypeScript itself, and fast-anything needs node to start the app:\n    fast-anything scan -- node app.ts"
+            "Node.js 22.6+ runs TypeScript itself, and everything-fast needs node to start the app:\n    everything-fast scan -- node app.ts"
         }
         "bundle" => {
-            "bundle exec sets up gems for its own process only. Scan with ruby directly, and if the app needs Bundler, put  require \"bundler/setup\"  at the top of its script:\n    fast-anything scan -- ruby app.rb"
+            "bundle exec sets up gems for its own process only. Scan with ruby directly, and if the app needs Bundler, put  require \"bundler/setup\"  at the top of its script:\n    everything-fast scan -- ruby app.rb"
         }
         _ => return None,
     })
@@ -87,7 +87,7 @@ impl Lang {
             bail!("{hint}")
         } else {
             bail!(
-                "fast-anything speaks Python, Node.js (JavaScript/TypeScript), Ruby, Java, Go, PHP, C, C++, C# and R. Start the command with one of them:\n    fast-anything scan -- python app.py\n    fast-anything scan -- node app.js  (or bun app.ts, deno run -A app.ts)\n    fast-anything scan -- ruby app.rb\n    fast-anything scan -- java App.java\n    fast-anything scan -- go run .\n    fast-anything scan -- php app.php\n    fast-anything scan -- clang -O2 main.c  (or gcc, g++, clang++, icpx)\n    fast-anything scan -- dotnet run -c Release\n    fast-anything scan -- Rscript app.R"
+                "everything-fast speaks Python, Node.js (JavaScript/TypeScript), Ruby, Java, Go, PHP, C, C++, C# and R. Start the command with one of them:\n    everything-fast scan -- python app.py\n    everything-fast scan -- node app.js  (or bun app.ts, deno run -A app.ts)\n    everything-fast scan -- ruby app.rb\n    everything-fast scan -- java App.java\n    everything-fast scan -- go run .\n    everything-fast scan -- php app.php\n    everything-fast scan -- clang -O2 main.c  (or gcc, g++, clang++, icpx)\n    everything-fast scan -- dotnet run -c Release\n    everything-fast scan -- Rscript app.R"
             )
         }
     }
@@ -302,7 +302,7 @@ fn compiler_errors(log: &str) -> String {
 pub fn build(ctx: &Ctx, port: &Port) -> Result<std::result::Result<PathBuf, String>> {
     let exe = ctx.runtime()?;
     let dir = ctx.crate_dir(port);
-    ensure!(dir.join("Cargo.toml").exists(), "{} has no crate yet: run  fast-anything port {}", port.id, port.id);
+    ensure!(dir.join("Cargo.toml").exists(), "{} has no crate yet: run  everything-fast port {}", port.id, port.id);
     let target = ctx.fast.join("target");
     let mut cmd = Command::new("cargo");
     cmd.args(["build", "--release", "--message-format=short"]).current_dir(&dir).env("CARGO_TARGET_DIR", &target);
@@ -351,7 +351,7 @@ pub fn source_hash(dir: &Path) -> Result<String> {
 // ------------------------------------------------------------------ marked blocks
 
 pub fn markers(comment: &str, id: &str) -> (String, String) {
-    (format!("{comment} >>> fast-anything: {id} >>>"), format!("{comment} <<< fast-anything: {id} <<<"))
+    (format!("{comment} >>> everything-fast: {id} >>>"), format!("{comment} <<< everything-fast: {id} <<<"))
 }
 
 fn newline(text: &str) -> &'static str {
@@ -435,7 +435,7 @@ mod tests {
         assert!(Lang::detect("npx").unwrap_err().to_string().contains("node app.ts"));
         assert!(Lang::detect("tsx").unwrap_err().to_string().contains("node app.ts"));
         assert!(Lang::detect("bundle").unwrap_err().to_string().contains("bundler/setup"));
-        assert!(Lang::detect("cobol").unwrap_err().to_string().starts_with("fast-anything speaks"));
+        assert!(Lang::detect("cobol").unwrap_err().to_string().starts_with("everything-fast speaks"));
     }
 
     #[test]
@@ -443,7 +443,7 @@ mod tests {
         let guard = |t: &str| line_starting(t, &["if__name__==\"__main__\":", "if__name__=='__main__':"]);
         for original in ["a = 1\n", "a = 1\r\n", "a = 1\n\n\nif __name__ == \"__main__\":\n    main()\n", "x"] {
             let appended = append_marked(original, "#", "m.f", "f = g");
-            assert!(appended.contains("# >>> fast-anything: m.f >>>"));
+            assert!(appended.contains("# >>> everything-fast: m.f >>>"));
             assert_eq!(
                 strip_marked(&appended, "#", "m.f"),
                 original.to_string() + if original == "x" { "\n" } else { "" }

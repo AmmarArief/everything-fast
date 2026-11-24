@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- fast-anything's C# helper: reads sources with Roslyn and EventPipe traces with TraceEvent. Built into .fast once per project. -->
+  <!-- everything-fast's C# helper: reads sources with Roslyn and EventPipe traces with TraceEvent. Built into .fast once per project. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <RollForward>Major</RollForward>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>FastAnythingTools</AssemblyName>
+    <AssemblyName>EverythingFastTools</AssemblyName>
     <NoWarn>$(NoWarn);CS8600;CS8602;CS8604</NoWarn>
   </PropertyGroup>
   <ItemGroup>

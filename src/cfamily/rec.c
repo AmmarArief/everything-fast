@@ -1,4 +1,4 @@
-/* fast-anything recorder runtime for C: compiled into the app for one run. */
+/* everything-fast recorder runtime for C: compiled into the app for one run. */
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -154,7 +154,7 @@ static char *fa_finish(const char *result, int derived) {
 }
 static void fa_keep(const char *result, long long took) {
     if (!fa_limit) {
-        const char *l = getenv("FAST_ANYTHING_RECORD_LIMIT");
+        const char *l = getenv("EVERYTHING_FAST_RECORD_LIMIT");
         fa_limit = l && atoi(l) > 0 ? (size_t) atoi(l) : 500;
         fa_kept = (char **) calloc(fa_limit, sizeof(char *));
     }
@@ -197,7 +197,7 @@ void fa_rec_derived_f64(double r) { fa_derive(fa_fmt_f64(r)); }
 void fa_rec_derived_bool(int r) { fa_derive(r ? "true" : "false"); }
 
 int fa_rec_derive_ok(void) {
-    const char *d = getenv("FAST_ANYTHING_RECORD_DERIVE");
+    const char *d = getenv("EVERYTHING_FAST_RECORD_DERIVE");
     if (d && d[0] == '0') return 0;
     if (!fa_derive_started) fa_derive_started = fa_now();
     return fa_nderived < 200 && fa_now() - fa_derive_started < 3000000000LL;
@@ -229,7 +229,7 @@ char *fa_rec_substr(const char *s, size_t off, size_t len) {
 void fa_rec_free(void *p) { free(p); }
 
 static void fa_rec_save(void) {
-    const char *path = getenv("FAST_ANYTHING_RECORD_OUT"), *meta = getenv("FAST_ANYTHING_RECORD_META");
+    const char *path = getenv("EVERYTHING_FAST_RECORD_OUT"), *meta = getenv("EVERYTHING_FAST_RECORD_META");
     FILE *out = path ? fopen(path, "wb") : NULL;
     if (out) {
         for (size_t i = 0; i < fa_nkept; i++) fprintf(out, "%s\n", fa_kept[i]);

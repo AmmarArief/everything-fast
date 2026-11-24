@@ -251,7 +251,7 @@ const NONDET: &[&str] = &[
 ];
 const COROUTINES: &[&str] = &["launch", "async", "runBlocking", "withContext", "delay("];
 
-/// Every function fast-anything can name in one Kotlin file.
+/// Every function everything-fast can name in one Kotlin file.
 fn describe_file(path: &Path) -> Vec<Method> {
     let Ok(src) = fs::read_to_string(path) else { return vec![] };
     let code = code_only(&src);
@@ -573,7 +573,7 @@ fn package_of(text: &str) -> String {
 }
 
 /// src/main/java/<package> of the module the Kotlin file is in: where the build compiles the Java
-/// classes fast-anything adds (Java files among the Kotlin sources would be seen by kotlinc but not
+/// classes everything-fast adds (Java files among the Kotlin sources would be seen by kotlinc but not
 /// compiled).
 fn java_dir(file: &Path, package: &str) -> Result<PathBuf> {
     let mut module = file.parent();
@@ -642,7 +642,7 @@ fn ret(hs: &Hotspot) -> String {
 
 fn record_prologue(hs: &Hotspot) -> String {
     format!(
-        "if (!FastAnythingRec.inside) {{\n    @Suppress(\"UNCHECKED_CAST\")\n    val __faR = FastAnythingRec.record({args}) {{ __faA -> {call} }} as {ret}\n    return __faR\n}}",
+        "if (!EverythingFastRec.inside) {{\n    @Suppress(\"UNCHECKED_CAST\")\n    val __faR = EverythingFastRec.record({args}) {{ __faA -> {call} }} as {ret}\n    return __faR\n}}",
         args = args_array(hs),
         call = call_with(hs),
         ret = ret(hs),
@@ -666,14 +666,14 @@ pub fn record(ctx: &Ctx, program: &str, args: &[String], hs: &Hotspot, out: &Pat
     let meta = out.with_extension("meta.json");
     let created = create_dirs(&dir)?;
     let mut patches = Patches::new(ctx)?;
-    patches.write(&dir.join("FastAnythingRec.java"), &rec)?;
+    patches.write(&dir.join("EverythingFastRec.java"), &rec)?;
     patches.write(&file, &patched)?;
     let run = output(
         java::app_command(program, args)
             .current_dir(&ctx.root)
-            .env("FAST_ANYTHING_RECORD_OUT", out)
-            .env("FAST_ANYTHING_RECORD_META", &meta)
-            .env("FAST_ANYTHING_RECORD_LIMIT", limit.to_string())
+            .env("EVERYTHING_FAST_RECORD_OUT", out)
+            .env("EVERYTHING_FAST_RECORD_META", &meta)
+            .env("EVERYTHING_FAST_RECORD_LIMIT", limit.to_string())
             .env(DISABLE_ENV, "1")
             .stdin(Stdio::null()),
         program,
@@ -790,7 +790,7 @@ pub fn verify(ctx: &Ctx, port: &Port) -> Result<Verify> {
 // ------------------------------------------------------------------ the bridge
 
 fn bridge_class(port: &Port) -> String {
-    format!("FastAnything_{}", util::slug(&port.id))
+    format!("EverythingFast_{}", util::slug(&port.id))
 }
 
 fn hotspot_of<'a>(ctx: &'a Ctx, port: &Port) -> Result<&'a Hotspot> {

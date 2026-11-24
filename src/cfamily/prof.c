@@ -1,4 +1,4 @@
-/* fast-anything profiler runtime: compiled into the app for one run. */
+/* everything-fast profiler runtime: compiled into the app for one run. */
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -44,7 +44,7 @@ void fa_prof_exit(fa_prof_frame *f) {
 #endif
 
 static void fa_prof_save(void) {
-    const char *path = getenv("FAST_ANYTHING_PROF_OUT");
+    const char *path = getenv("EVERYTHING_FAST_PROF_OUT");
     FILE *out = path ? fopen(path, "wb") : NULL;
     if (!out) return;
     fprintf(out, "{\"wall\":%.9f,\"stats\":{", (double) (fa_now() - fa_started) / 1e9);

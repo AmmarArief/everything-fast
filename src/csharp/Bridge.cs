@@ -1,5 +1,5 @@
-// fast-anything: calls the verified Rust port of /*ID*/. Generated; remove with  fast-anything disable /*ID*/
-// FAST_ANYTHING_DISABLE=1 runs the C# version instead.
+// everything-fast: calls the verified Rust port of /*ID*/. Generated; remove with  everything-fast disable /*ID*/
+// EVERYTHING_FAST_DISABLE=1 runs the C# version instead.
 #nullable enable
 #pragma warning disable
 using System;
@@ -28,7 +28,7 @@ static class /*CLASS*/
 
     static /*CLASS*/()
     {
-        if (Environment.GetEnvironmentVariable("FAST_ANYTHING_DISABLE") != null) return;
+        if (Environment.GetEnvironmentVariable("EVERYTHING_FAST_DISABLE") != null) return;
         try
         {
             var lib = NativeLibrary.Load(/*LIB*/);
@@ -50,7 +50,7 @@ static class /*CLASS*/
         Marshal.Copy(p, reply, 0, reply.Length);
         FreeFn!(p, n);
         using var doc = JsonDocument.Parse(reply);
-        if (doc.RootElement.TryGetProperty("error", out var e)) throw new InvalidOperationException("fast-anything: " + e);
+        if (doc.RootElement.TryGetProperty("error", out var e)) throw new InvalidOperationException("everything-fast: " + e);
         return JsonSerializer.Deserialize(doc.RootElement.GetProperty("ok"), type, Json.Options);
     }
 

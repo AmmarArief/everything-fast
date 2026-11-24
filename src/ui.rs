@@ -80,5 +80,5 @@ pub fn error(s: impl Display) {
 }
 
 pub fn banner() {
-    line(format!("{} {}", rust(bold("⚡ fast-anything")), dim(concat!("v", env!("CARGO_PKG_VERSION")))));
+    line(format!("{} {}", rust(bold("⚡ everything-fast")), dim(concat!("v", env!("CARGO_PKG_VERSION")))));
 }

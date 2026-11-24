@@ -1,6 +1,6 @@
-/* fast-anything recorder for C, force-included with -include for one run. */
-#ifndef FAST_ANYTHING_REC_H
-#define FAST_ANYTHING_REC_H
+/* everything-fast recorder for C, force-included with -include for one run. */
+#ifndef EVERYTHING_FAST_REC_H
+#define EVERYTHING_FAST_REC_H
 #include <stddef.h>
 #ifdef __cplusplus
 extern "C" {

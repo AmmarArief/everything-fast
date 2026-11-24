@@ -53,12 +53,12 @@ jobs:
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       - run: cargo test
-      - run: node --test npm/fast-anything/bin/fast-anything.test.js
+      - run: node --test npm/everything-fast/bin/everything-fast.test.js
       - run: cargo build --release
       - name: end to end on the demo (reference port instead of an agent)
         working-directory: examples/fuzzy-dedupe
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- python app.py
           $fa port
           cp reference/lib.rs .fast/ports/$(ls .fast/ports)/src/lib.rs
@@ -72,7 +72,7 @@ jobs:
       - name: end to end, TypeScript
         working-directory: examples/fuzzy-dedupe-ts
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- node app.ts
           $fa port
           cp reference/lib.rs .fast/ports/$(ls .fast/ports)/src/lib.rs
@@ -85,7 +85,7 @@ jobs:
       - name: end to end, Ruby
         working-directory: examples/fuzzy-dedupe-rb
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- ruby app.rb
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -98,7 +98,7 @@ jobs:
       - name: end to end, Java
         working-directory: examples/fuzzy-dedupe-java
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- java App.java
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -112,7 +112,7 @@ jobs:
       - name: end to end, Go
         working-directory: examples/fuzzy-dedupe-go
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- go run .
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -126,7 +126,7 @@ jobs:
       - name: end to end, PHP
         working-directory: examples/fuzzy-dedupe-php
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- php app.php
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -140,7 +140,7 @@ jobs:
       - name: end to end, Java with Maven
         working-directory: examples/fuzzy-dedupe-java-build
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- mvn -q compile exec:java
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -154,7 +154,7 @@ jobs:
       - name: end to end, Java with Gradle
         working-directory: examples/fuzzy-dedupe-java-build
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- gradle -q run
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -167,7 +167,7 @@ jobs:
       - name: end to end, Kotlin with Gradle
         working-directory: examples/fuzzy-dedupe-kt
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- gradle -q run
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -181,7 +181,7 @@ jobs:
       - name: end to end, R
         working-directory: examples/fuzzy-dedupe-r
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- Rscript app.R
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -195,7 +195,7 @@ jobs:
       - name: end to end, C#
         working-directory: examples/fuzzy-dedupe-cs
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- dotnet run -c Release
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -209,7 +209,7 @@ jobs:
       - name: end to end, C
         working-directory: examples/mandelbrot-c
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           $fa scan -- clang -O2 -ffp-contract=off main.c mandelbrot.c
           $fa port
           cp reference/port.rs .fast/ports/$(ls .fast/ports)/src/port.rs
@@ -222,7 +222,7 @@ jobs:
       - name: end to end, C++
         working-directory: examples/fuzzy-dedupe-cpp
         run: |
-          fa=../../target/release/fast-anything
+          fa=../../target/release/everything-fast
           # the runner's standalone clang can be older than the MSVC STL it pairs with
           extra=""; if [ "$RUNNER_OS" = Windows ]; then extra=-D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH; fi
           $fa scan -- clang++ -O2 -std=c++17 $extra main.cpp fuzzy.cpp

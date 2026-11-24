@@ -1,4 +1,4 @@
-# fast-anything's R bridge: R values to JSON for a Rust port, the port's reply back to R values,
+# everything-fast's R bridge: R values to JSON for a Rust port, the port's reply back to R values,
 # and the comparison verify uses. Base R only. Copied into <project>/.fast; not meant to be used
 # by hand.
 

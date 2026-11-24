@@ -1,4 +1,4 @@
-// Node side of fast-anything. The CLI copies this file to <project>/.fast/runner.mjs and runs
+// Node side of everything-fast. The CLI copies this file to <project>/.fast/runner.mjs and runs
 //     node runner.mjs <mode> <job.json>
 // Modes: profile (analyse a V8 .cpuprofile), verify. Not meant to be run by hand.
 import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
@@ -536,12 +536,12 @@ function bestPass(fn, calls, budget) {
 }
 
 async function verify(job) {
-  process.env.FAST_ANYTHING_DISABLE = "1";
+  process.env.EVERYTHING_FAST_DISABLE = "1";
   const fast = createRequire(import.meta.url)(job.addon)[job.js_name];
   if (typeof fast !== "function") throw new Error(job.addon + " doesn't export " + job.js_name);
   let original = null;
-  let handed = null; // from a block fast-anything appended to the module, so unexported functions work too
-  globalThis.__fastAnythingOriginal = (fn) => {
+  let handed = null; // from a block everything-fast appended to the module, so unexported functions work too
+  globalThis.__everythingFastOriginal = (fn) => {
     handed = fn;
   };
   try {

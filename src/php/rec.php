@@ -1,6 +1,6 @@
 <?php
-// fast-anything's PHP recorder, prepended with -d auto_prepend_file for one run.
-final class FastAnythingRec
+// everything-fast's PHP recorder, prepended with -d auto_prepend_file for one run.
+final class EverythingFastRec
 {
     public static bool $inside = false;
     private static array $kept = [];
@@ -45,7 +45,7 @@ final class FastAnythingRec
         self::$inside = true;
         try {
             self::$calls++;
-            $limit = (int) (getenv('FAST_ANYTHING_RECORD_LIMIT') ?: 500);
+            $limit = (int) (getenv('EVERYTHING_FAST_RECORD_LIMIT') ?: 500);
             $slot = count(self::$kept) < $limit ? count(self::$kept) : random_int(0, self::$calls - 1);
             $enc = null;
             if ($slot < $limit) {
@@ -129,12 +129,12 @@ final class FastAnythingRec
         }
         ksort(self::$kept);
         $lines = array_merge(array_values(self::$kept), $derived);
-        file_put_contents(getenv('FAST_ANYTHING_RECORD_OUT'), $lines ? implode("\n", $lines) . "\n" : '');
-        file_put_contents(getenv('FAST_ANYTHING_RECORD_META'), json_encode([
+        file_put_contents(getenv('EVERYTHING_FAST_RECORD_OUT'), $lines ? implode("\n", $lines) . "\n" : '');
+        file_put_contents(getenv('EVERYTHING_FAST_RECORD_META'), json_encode([
             'calls' => self::$calls, 'kept' => count(self::$kept), 'skipped' => self::$skipped,
             'unsupported' => array_keys(self::$why), 'original_ns' => self::$calls ? self::$nanos / self::$calls : 0,
         ]));
     }
 }
 
-register_shutdown_function([FastAnythingRec::class, 'save']);
+register_shutdown_function([EverythingFastRec::class, 'save']);

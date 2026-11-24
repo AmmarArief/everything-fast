@@ -6,7 +6,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
-const launcherSrc = path.join(__dirname, "fast-anything.js");
+const launcherSrc = path.join(__dirname, "everything-fast.js");
 
 test("launcher runs a platform binary that npm left without the execute bit", {
   skip: process.platform === "win32" ? "Windows has no execute bit" : false,
@@ -14,22 +14,22 @@ test("launcher runs a platform binary that npm left without the execute bit", {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "fa-eacces-"));
   try {
     const plat = `${process.platform}-${process.arch}`;
-    const pkgDir = path.join(tmp, "node_modules", `@el4cteo/fast-anything-${plat}`);
+    const pkgDir = path.join(tmp, "node_modules", `everything-fast-${plat}`);
     const binDir = path.join(pkgDir, "bin");
     fs.mkdirSync(binDir, { recursive: true });
     fs.writeFileSync(
       path.join(pkgDir, "package.json"),
-      JSON.stringify({ name: `@el4cteo/fast-anything-${plat}`, version: "0.0.0" }),
+      JSON.stringify({ name: `everything-fast-${plat}`, version: "0.0.0" }),
     );
 
     const marker = path.join(tmp, "ran");
-    const fakeBin = path.join(binDir, "fast-anything");
+    const fakeBin = path.join(binDir, "everything-fast");
     fs.writeFileSync(fakeBin, `#!/bin/sh\necho ok > '${marker}'\n`);
     fs.chmodSync(fakeBin, 0o644);
 
     const launchDir = path.join(tmp, "bin");
     fs.mkdirSync(launchDir, { recursive: true });
-    const launcher = path.join(launchDir, "fast-anything.js");
+    const launcher = path.join(launchDir, "everything-fast.js");
     fs.copyFileSync(launcherSrc, launcher);
 
     const run = spawnSync(process.execPath, [launcher, "--version"], { encoding: "utf8" });

@@ -1,7 +1,7 @@
 <?php
-// fast-anything's PHP profiler, prepended with -d auto_prepend_file for one run. Every function
-// in the project got one line,  $__faP = new \FastAnythingProf(N);  timed until the function returns.
-final class FastAnythingProf
+// everything-fast's PHP profiler, prepended with -d auto_prepend_file for one run. Every function
+// in the project got one line,  $__faP = new \EverythingFastProf(N);  timed until the function returns.
+final class EverythingFastProf
 {
     public static array $stats = [];
     public static array $stack = [];
@@ -29,10 +29,10 @@ final class FastAnythingProf
     }
 }
 
-FastAnythingProf::$started = hrtime(true);
+EverythingFastProf::$started = hrtime(true);
 register_shutdown_function(function () {
-    $wall = (hrtime(true) - FastAnythingProf::$started) / 1e9;
+    $wall = (hrtime(true) - EverythingFastProf::$started) / 1e9;
     $stats = [];
-    foreach (FastAnythingProf::$stats as $id => [$calls, $own, $cum]) $stats[(string) $id] = [$calls, $own / 1e9, $cum / 1e9];
-    file_put_contents(getenv('FAST_ANYTHING_PROF_OUT'), json_encode(['wall' => $wall, 'stats' => (object) $stats]));
+    foreach (EverythingFastProf::$stats as $id => [$calls, $own, $cum]) $stats[(string) $id] = [$calls, $own / 1e9, $cum / 1e9];
+    file_put_contents(getenv('EVERYTHING_FAST_PROF_OUT'), json_encode(['wall' => $wall, 'stats' => (object) $stats]));
 });

@@ -1,5 +1,5 @@
 <?php
-// PHP side of fast-anything's scan: reads the app's files with PHP's own tokenizer and describes
+// PHP side of everything-fast's scan: reads the app's files with PHP's own tokenizer and describes
 // every function and static method. The CLI runs it as  php describe.php <file list> <out.json>.
 declare(strict_types=1);
 

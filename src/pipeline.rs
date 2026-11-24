@@ -23,7 +23,7 @@ pub struct ScanOut {
 pub fn scan(root: &Path, command: Vec<String>, duration: Option<f64>) -> Result<ScanOut> {
     ensure!(
         !command.is_empty(),
-        "put the command that runs your app after --, e.g.  fast-anything scan -- python app.py"
+        "put the command that runs your app after --, e.g.  everything-fast scan -- python app.py"
     );
     let mut ctx = Ctx::open(root)?;
     let command = match crate::python::unwrap_env_runner(&command, |argv| env_runner_output(&ctx.root, argv))? {
@@ -68,7 +68,7 @@ fn pick<'a>(hotspots: &'a [Hotspot], id: Option<&str>) -> Result<&'a Hotspot> {
         return hotspots
             .iter()
             .find(|h| h.worth_it())
-            .context("no function worth porting in the last scan (see  fast-anything status  for why)");
+            .context("no function worth porting in the last scan (see  everything-fast status  for why)");
     };
     if let Some(h) = hotspots.iter().find(|h| h.id == id) {
         return Ok(h);
@@ -76,7 +76,7 @@ fn pick<'a>(hotspots: &'a [Hotspot], id: Option<&str>) -> Result<&'a Hotspot> {
     let hits: Vec<&Hotspot> = hotspots.iter().filter(|h| h.name == id || h.qualname == id).collect();
     match hits.as_slice() {
         [one] => Ok(one),
-        [] => bail!("{id} wasn't in the last scan; run  fast-anything scan -- ...  again, or check the name"),
+        [] => bail!("{id} wasn't in the last scan; run  everything-fast scan -- ...  again, or check the name"),
         many => bail!("{id} is ambiguous: {}", many.iter().map(|h| h.id.as_str()).collect::<Vec<_>>().join(", ")),
     }
 }
@@ -204,7 +204,7 @@ pub fn verify(root: &Path, id: Option<&str>) -> Result<(String, Verify)> {
 /// Verify every port; an enabled one that fails is switched back, as with a single verify.
 pub fn verify_all(root: &Path) -> Result<()> {
     let ids: Vec<String> = Ctx::open(root)?.state.ports.keys().cloned().collect();
-    ensure!(!ids.is_empty(), "nothing ported yet: run  fast-anything port");
+    ensure!(!ids.is_empty(), "nothing ported yet: run  everything-fast port");
     let mut failed = vec![];
     for id in &ids {
         let (id, v) = verify(root, Some(id))?;
@@ -221,7 +221,7 @@ pub fn verify_all(root: &Path) -> Result<()> {
 /// What to do about a port whose original changed after it was recorded.
 pub fn stale_hint(id: &str) -> String {
     format!(
-        "its recorded calls and Rust may be out of date. Run  fast-anything port {id}  to record again, update the Rust, then verify (or --force)"
+        "its recorded calls and Rust may be out of date. Run  everything-fast port {id}  to record again, update the Rust, then verify (or --force)"
     )
 }
 
@@ -247,10 +247,10 @@ pub fn enable(root: &Path, id: Option<&str>, force: bool) -> Result<String> {
     }
     let verified = port.verify.as_ref().is_some_and(Verify::ok);
     if !verified && !force {
-        bail!("{id} hasn't passed verify yet: run  fast-anything verify {id}  (or --force)");
+        bail!("{id} hasn't passed verify yet: run  everything-fast verify {id}  (or --force)");
     }
     if !force && crate_needs_verify(&ctx, &port)? {
-        bail!("{id}'s Rust changed since it passed verify: run  fast-anything verify {id}  (or --force)");
+        bail!("{id}'s Rust changed since it passed verify: run  everything-fast verify {id}  (or --force)");
     }
     if let Some(m) = port.verify.as_ref().filter(|v| v.slower() && !force).and_then(|v| v.micro) {
         bail!("{id} is {} slower per call in Rust: {}", util::times(1.0 / m.speedup), slower_hint());
@@ -281,13 +281,13 @@ pub fn disable(root: &Path, id: Option<&str>) -> Result<String> {
     for (begin, end) in markers_for_port(port) {
         ensure!(
             before.contains(&begin) == before.contains(&end),
-            "the fast-anything block for {id} is incomplete; restore its begin/end markers before disabling"
+            "the everything-fast block for {id} is incomplete; restore its begin/end markers before disabling"
         );
     }
     port.lang.disable(&ctx, port)?;
     let after = fs::read_to_string(&file).with_context(|| format!("reading {}", port.file))?;
     for (begin, end) in markers_for_port(port) {
-        ensure!(!after.contains(&begin) && !after.contains(&end), "the fast-anything block for {id} wasn't removed");
+        ensure!(!after.contains(&begin) && !after.contains(&end), "the everything-fast block for {id} wasn't removed");
     }
     if let Some(p) = ctx.state.ports.get_mut(&id) {
         p.enabled = false;
@@ -313,7 +313,7 @@ pub fn build_all(root: &Path) -> Result<()> {
         if port.enabled && crate_needs_verify(&ctx, port)? {
             failed += 1;
             ui::error(format!(
-                "{} is switched on and its Rust hasn't passed verify in its current state; run  fast-anything verify {}",
+                "{} is switched on and its Rust hasn't passed verify in its current state; run  everything-fast verify {}",
                 port.id, port.id
             ));
             continue;
@@ -533,9 +533,9 @@ pub fn go(
             ui::bold("--agent claude")
         ));
         for id in &picks {
-            show::next(&format!("fast-anything verify {id} && fast-anything enable {id}"));
+            show::next(&format!("everything-fast verify {id} && everything-fast enable {id}"));
         }
-        show::next("fast-anything bench");
+        show::next("everything-fast bench");
         return Ok(());
     };
 
@@ -551,7 +551,7 @@ pub fn go(
             enabled += 1;
         } else {
             ui::warn(format!(
-                "{id}: not right after {attempts} attempts; fix src/lib.rs by hand (see TASK.md), then  fast-anything verify {id}"
+                "{id}: not right after {attempts} attempts; fix src/lib.rs by hand (see TASK.md), then  everything-fast verify {id}"
             ));
         }
     }

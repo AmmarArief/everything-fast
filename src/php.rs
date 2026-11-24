@@ -169,7 +169,7 @@ pub fn profile(ctx: &Ctx, php: &str, args: &[String]) -> Result<Profile> {
             by_file
                 .entry(&f.path)
                 .or_default()
-                .push((f.body_offset, format!(" $__faP = new \\FastAnythingProf({i});")));
+                .push((f.body_offset, format!(" $__faP = new \\EverythingFastProf({i});")));
         }
     }
     let prof = ctx.fast.join("prof.php");
@@ -181,7 +181,7 @@ pub fn profile(ctx: &Ctx, php: &str, args: &[String]) -> Result<Profile> {
         let text = fs::read_to_string(path)?;
         patches.write(path, &insert_at(&text, at))?;
     }
-    let run = run_php(ctx, php, &prof, args, &[("FAST_ANYTHING_PROF_OUT", &out)]);
+    let run = run_php(ctx, php, &prof, args, &[("EVERYTHING_FAST_PROF_OUT", &out)]);
     patches.restore()?;
     let run = run?;
     ensure!(run.status.success(), "the app failed ({}):\n{}", run.status, tail(&combined(&run), 30));
@@ -222,7 +222,7 @@ pub fn record(ctx: &Ctx, php: &str, args: &[String], hs: &Hotspot, out: &Path, l
         .with_context(|| format!("{} isn't in {} any more: scan again", hs.qualname, hs.file))?;
     let call = if hs.owner.is_some() { format!("self::{}", hs.name) } else { hs.name.clone() };
     let line = format!(
-        " if (!\\FastAnythingRec::$inside) return \\FastAnythingRec::record({}, func_get_args(), static fn(...$__faA) => {call}(...$__faA));",
+        " if (!\\EverythingFastRec::$inside) return \\EverythingFastRec::record({}, func_get_args(), static fn(...$__faA) => {call}(...$__faA));",
         name_const(hs)
     );
     let text = fs::read_to_string(&file)?;
@@ -232,7 +232,8 @@ pub fn record(ctx: &Ctx, php: &str, args: &[String], hs: &Hotspot, out: &Path, l
     let _ = fs::remove_file(&meta);
     let mut patches = Patches::new(ctx)?;
     patches.write(&file, &insert_at(&text, vec![(f.body_offset, line)]))?;
-    let run = run_php(ctx, php, &rec, args, &[("FAST_ANYTHING_RECORD_OUT", out), ("FAST_ANYTHING_RECORD_META", &meta)]);
+    let run =
+        run_php(ctx, php, &rec, args, &[("EVERYTHING_FAST_RECORD_OUT", out), ("EVERYTHING_FAST_RECORD_META", &meta)]);
     patches.restore()?;
     let run = run?;
     ensure!(run.status.success(), "the app failed while recording ({}):\n{}", run.status, tail(&combined(&run), 30));
@@ -300,7 +301,7 @@ pub fn verify(ctx: &Ctx, port: &Port) -> Result<Verify> {
 // ------------------------------------------------------------------ the bridge
 
 fn bridge_class(port: &Port) -> String {
-    format!("FastAnything_{}", util::slug(&port.id))
+    format!("EverythingFast_{}", util::slug(&port.id))
 }
 
 fn find_body(name: &str, hint: u32) -> impl Fn(&str) -> Option<usize> {
@@ -326,7 +327,7 @@ pub fn enable(ctx: &Ctx, port: &Port) -> Result<()> {
     if text.contains("namespace ")
         && text.lines().any(|l| l.trim_start().starts_with("namespace ") && l.trim_end().ends_with('{'))
     {
-        bail!("{} uses braced namespaces, which fast-anything can't add code to yet", port.file);
+        bail!("{} uses braced namespaces, which everything-fast can't add code to yet", port.file);
     }
     let class = bridge_class(port);
     let from = file.parent().context("file has no folder")?;

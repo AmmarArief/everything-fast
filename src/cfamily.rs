@@ -1,5 +1,5 @@
 //! C and C++ backend: apps built with gcc or clang, e.g.  clang -O2 main.c fuzzy.c  (app arguments
-//! after a second --). fast-anything builds the binary itself into .fast/bin. Profiled with a
+//! after a second --). everything-fast builds the binary itself into .fast/bin. Profiled with a
 //! one-line timer per function for one run, read with a small declaration parser, and bridged with
 //! a block appended to the source file that loads the port with LoadLibrary or dlopen.
 
@@ -105,7 +105,7 @@ impl Build {
         }
         ensure!(
             !sources.is_empty(),
-            "give the sources to compile:  fast-anything scan -- clang -O2 main.c fuzzy.c  (app arguments after a second --)"
+            "give the sources to compile:  everything-fast scan -- clang -O2 main.c fuzzy.c  (app arguments after a second --)"
         );
         Ok(Build { flags, sources, args: app })
     }
@@ -162,7 +162,7 @@ fn run(ctx: &Ctx, bin: &Path, b: &Build, env: &[(&str, &Path)], derive: bool) ->
         cmd.env(k, v);
     }
     if !derive {
-        cmd.env("FAST_ANYTHING_RECORD_DERIVE", "0");
+        cmd.env("EVERYTHING_FAST_RECORD_DERIVE", "0");
     }
     output(&mut cmd, "the app")
 }
@@ -628,7 +628,7 @@ fn ensure_len(len: Option<Scalar>, t: &str) -> std::result::Result<(), String> {
     }
 }
 
-/// C++ types fast-anything can carry across: scalars, std::string, vector, array, map/unordered_map
+/// C++ types everything-fast can carry across: scalars, std::string, vector, array, map/unordered_map
 /// with string keys and pair, by value or const reference.
 fn cpp_rust_type(t: &str) -> Option<String> {
     let t = squash(t);
@@ -868,7 +868,7 @@ pub fn profile(ctx: &Ctx, cc: &str, args: &[String], lang: Lang) -> Result<Profi
     let bin = bin?;
     let out = ctx.fast.join("profile.json");
     let _ = fs::remove_file(&out);
-    let ran = run(ctx, &bin, &b, &[("FAST_ANYTHING_PROF_OUT", &out)], true)?;
+    let ran = run(ctx, &bin, &b, &[("EVERYTHING_FAST_PROF_OUT", &out)], true)?;
     ensure!(ran.status.success(), "the app failed ({}):\n{}", ran.status, tail(&combined(&ran), 30));
     let result: Value = serde_json::from_str(
         &fs::read_to_string(&out).context("the profiler wrote nothing: does main return normally?")?,
@@ -1062,7 +1062,7 @@ pub fn record(ctx: &Ctx, cc: &str, args: &[String], hs: &Hotspot, out: &Path, la
     let bin = compile(ctx, cc, &b, &extra, Some(&header));
     patches.restore()?;
     let bin = bin?;
-    let env = [("FAST_ANYTHING_RECORD_OUT", out), ("FAST_ANYTHING_RECORD_META", meta.as_path())];
+    let env = [("EVERYTHING_FAST_RECORD_OUT", out), ("EVERYTHING_FAST_RECORD_META", meta.as_path())];
     let _ = fs::remove_file(&meta);
     let mut ran = run(ctx, &bin, &b, &env, true)?;
     if !ran.status.success() {
@@ -1171,7 +1171,7 @@ fn c_bridge(hs: &Hotspot, s: &str, lib: &str) -> Result<String> {
         _ => format!("({ret}) strtoll(ok, NULL, 10)"),
     };
     let body = format!(
-        r#"/* Calls the verified Rust port of {id}. FAST_ANYTHING_DISABLE=1 runs the C version instead. */
+        r#"/* Calls the verified Rust port of {id}. EVERYTHING_FAST_DISABLE=1 runs the C version instead. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1183,7 +1183,7 @@ static void (*fa_free_S)(unsigned char *, size_t);
 int fa_on_S(void) {{
     static int state = -1;
     if (state < 0) {{
-        void *lib = getenv("FAST_ANYTHING_DISABLE") ? NULL : FA_OPEN({lib});
+        void *lib = getenv("EVERYTHING_FAST_DISABLE") ? NULL : FA_OPEN({lib});
         state = 0;
         if (lib) {{
             *(void **) &fa_call_S = FA_SYM(lib, "fa_call");
@@ -1264,7 +1264,7 @@ fn cpp_bridge(hs: &Hotspot, s: &str, lib: &str, namespaces: &[String]) -> String
         .collect();
     let close: String = namespaces.iter().map(|_| "}\n").collect();
     let body = format!(
-        r#"// Calls the verified Rust port of {id}. FAST_ANYTHING_DISABLE=1 runs the C++ version instead.
+        r#"// Calls the verified Rust port of {id}. EVERYTHING_FAST_DISABLE=1 runs the C++ version instead.
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -1286,7 +1286,7 @@ struct Lib {{
     void (*free)(unsigned char *, size_t) = nullptr;
     bool on = false;
     Lib() {{
-        if (std::getenv("FAST_ANYTHING_DISABLE")) return;
+        if (std::getenv("EVERYTHING_FAST_DISABLE")) return;
         void *lib = FA_OPEN({lib});
         if (!lib) return;
         *(void **) &call = FA_SYM(lib, "fa_call");
@@ -1307,7 +1307,7 @@ bool fa_fast_S({ret} &fa_out, {params}) {{
     fa_bridge_S::lib().free(out, n);
     const char *p = text.c_str();
     fa_bridge_S::V reply = fa_bridge_S::parse(p);
-    if (const fa_bridge_S::V *err = reply.get("error")) throw std::runtime_error("fast-anything: " + err->s);
+    if (const fa_bridge_S::V *err = reply.get("error")) throw std::runtime_error("everything-fast: " + err->s);
     const fa_bridge_S::V *ok = reply.get("ok");
     if (!ok) return false;
     fa_bridge_S::from(*ok, fa_out);

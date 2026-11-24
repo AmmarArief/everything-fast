@@ -117,7 +117,7 @@ fn entry(args: &[String]) -> Result<&str> {
     match args.get(i) {
         Some(f) if f.ends_with(".java") => Ok(f),
         _ => bail!(
-            "run the app as a source file:  fast-anything scan -- java App.java  (jar and classpath apps aren't supported yet)"
+            "run the app as a source file:  everything-fast scan -- java App.java  (jar and classpath apps aren't supported yet)"
         ),
     }
 }
@@ -162,7 +162,7 @@ fn source_files(start: &Path) -> Vec<PathBuf> {
                 if !name.starts_with('.') && !["target", "build", "out", "node_modules"].contains(&name.as_str()) {
                     stack.push(p);
                 }
-            } else if name.ends_with(".java") && !name.starts_with("FastAnything") {
+            } else if name.ends_with(".java") && !name.starts_with("EverythingFast") {
                 out.push(p);
             }
         }
@@ -399,7 +399,7 @@ fn record_prologue(hs: &Hotspot) -> String {
         .map(|(i, p)| format!("({}) __faA[{i}]", p.annotation.as_deref().unwrap_or("Object")))
         .collect();
     format!(
-        "if (!FastAnythingRec.inside) {{\n    @SuppressWarnings(\"unchecked\") {ret} __faR = ({ret}) FastAnythingRec.record({args}, __faA -> {name}({casts}));\n    return __faR;\n}}",
+        "if (!EverythingFastRec.inside) {{\n    @SuppressWarnings(\"unchecked\") {ret} __faR = ({ret}) EverythingFastRec.record({args}, __faA -> {name}({casts}));\n    return __faR;\n}}",
         ret = ret(hs),
         args = args_array(hs),
         name = hs.name,
@@ -420,14 +420,14 @@ pub fn record(ctx: &Ctx, program: &str, args: &[String], hs: &Hotspot, out: &Pat
     )?;
     let meta = out.with_extension("meta.json");
     let mut patches = Patches::new(ctx)?;
-    patches.write(&native::sibling(&file, "FastAnythingRec.java")?, &rec)?;
+    patches.write(&native::sibling(&file, "EverythingFastRec.java")?, &rec)?;
     patches.write(&file, &patched)?;
     let run = output(
         app_command(program, args)
             .current_dir(&ctx.root)
-            .env("FAST_ANYTHING_RECORD_OUT", out)
-            .env("FAST_ANYTHING_RECORD_META", &meta)
-            .env("FAST_ANYTHING_RECORD_LIMIT", limit.to_string())
+            .env("EVERYTHING_FAST_RECORD_OUT", out)
+            .env("EVERYTHING_FAST_RECORD_META", &meta)
+            .env("EVERYTHING_FAST_RECORD_LIMIT", limit.to_string())
             .env(DISABLE_ENV, "1")
             .stdin(Stdio::null()),
         program,
@@ -491,7 +491,7 @@ pub fn verify(ctx: &Ctx, port: &Port) -> Result<Verify> {
 // ------------------------------------------------------------------ the bridge
 
 fn bridge_class(port: &Port) -> String {
-    format!("FastAnything_{}", util::slug(&port.id))
+    format!("EverythingFast_{}", util::slug(&port.id))
 }
 
 fn hotspot_of<'a>(ctx: &'a Ctx, port: &Port) -> Result<&'a Hotspot> {

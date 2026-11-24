@@ -30,15 +30,15 @@ jobs:
       - run: cargo build --release --target ${{ matrix.target }}
       - name: package
         run: |
-          name=fast-anything-${{ matrix.target }}
+          name=everything-fast-${{ matrix.target }}
           mkdir "$name" bin
-          cp target/${{ matrix.target }}/release/fast-anything${{ matrix.ext }} README.md LICENSE "$name/"
-          cp target/${{ matrix.target }}/release/fast-anything${{ matrix.ext }} bin/
+          cp target/${{ matrix.target }}/release/everything-fast${{ matrix.ext }} README.md LICENSE "$name/"
+          cp target/${{ matrix.target }}/release/everything-fast${{ matrix.ext }} bin/
           if [ "${{ matrix.ext }}" = ".exe" ]; then 7z a "$name.zip" "$name" >/dev/null; else tar czf "$name.tar.gz" "$name"; fi
       - uses: actions/upload-artifact@v7
         with:
           name: archive-${{ matrix.target }}
-          path: fast-anything-*.*
+          path: everything-fast-*.*
       - uses: actions/upload-artifact@v7
         with:
           name: bin-${{ matrix.target }}
@@ -60,7 +60,7 @@ jobs:
       - uses: softprops/action-gh-release@v3
         with:
           body_path: notes.md
-          files: fast-anything-*
+          files: everything-fast-*
 
   npm:
     needs: build

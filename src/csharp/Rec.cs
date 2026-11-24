@@ -1,4 +1,4 @@
-// fast-anything: records calls to /*ID*/ for one run. Generated; removed when the run ends.
+// everything-fast: records calls to /*ID*/ for one run. Generated; removed when the run ends.
 #nullable enable
 #pragma warning disable
 using System;
@@ -12,11 +12,11 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-static class FastAnythingRec
+static class EverythingFastRec
 {
     public static bool Inside;
     static readonly object Gate = new();
-    static readonly int Limit = int.TryParse(Environment.GetEnvironmentVariable("FAST_ANYTHING_RECORD_LIMIT"), out var n) ? n : 500;
+    static readonly int Limit = int.TryParse(Environment.GetEnvironmentVariable("EVERYTHING_FAST_RECORD_LIMIT"), out var n) ? n : 500;
     static readonly Random Rng = new(0xFA57);
     static readonly List<string> Kept = new();
     static readonly List<string?> KeptArgs = new();
@@ -28,7 +28,7 @@ static class FastAnythingRec
     static readonly string[] Texts = { "", "ÀÉÎõü ñ", "日本語のテキスト", "emoji 👍🏽🎉", "é́", "İ ß ǅ ΣΑΣ" };
     static readonly int[] Slices = { 0, 1, 2, 3, 5, 8, 13, 21, 34, 55 };
 
-    static FastAnythingRec()
+    static EverythingFastRec()
     {
         AppDomain.CurrentDomain.ProcessExit += (_, _) => Save();
     }
@@ -269,13 +269,13 @@ static class FastAnythingRec
             var b = new StringBuilder();
             foreach (var line in Kept) b.Append(line).Append('\n');
             foreach (var line in derived) b.Append(line).Append('\n');
-            System.IO.File.WriteAllText(Environment.GetEnvironmentVariable("FAST_ANYTHING_RECORD_OUT")!, b.ToString(), new UTF8Encoding(false));
+            System.IO.File.WriteAllText(Environment.GetEnvironmentVariable("EVERYTHING_FAST_RECORD_OUT")!, b.ToString(), new UTF8Encoding(false));
             var u = new StringBuilder("[");
             foreach (var s in Unsupported) u.Append(u.Length > 1 ? "," : "").Append(Json.Str(s));
             double ns = Calls > 0 ? Ticks * 1e9 / Stopwatch.Frequency / Calls : 0;
             string meta = "{\"calls\":" + Calls + ",\"kept\":" + Kept.Count + ",\"skipped\":" + Skipped + ",\"unsupported\":" + u + "]"
                 + ",\"mutates\":" + (Mutates ? "true" : "false") + ",\"original_ns\":" + ns.ToString("R", CultureInfo.InvariantCulture) + "}";
-            System.IO.File.WriteAllText(Environment.GetEnvironmentVariable("FAST_ANYTHING_RECORD_META")!, meta, new UTF8Encoding(false));
+            System.IO.File.WriteAllText(Environment.GetEnvironmentVariable("EVERYTHING_FAST_RECORD_META")!, meta, new UTF8Encoding(false));
         }
     }
 

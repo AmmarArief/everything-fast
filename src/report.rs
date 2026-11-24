@@ -37,7 +37,7 @@ pub fn svg(project: &str, b: &BenchResult, ports: &[&Port]) -> String {
         r##"<svg xmlns="http://www.w3.org/2000/svg" width="760" height="220" viewBox="0 0 760 220" role="img" aria-label="{project}: {headline} faster">
   <rect width="760" height="220" rx="16" fill="#0d1117"/>
   <rect x="0.5" y="0.5" width="759" height="219" rx="15.5" fill="none" stroke="#30363d"/>
-  <text x="32" y="44" font-family="{mono}" font-size="14" fill="#f74c00">⚡ fast-anything</text>
+  <text x="32" y="44" font-family="{mono}" font-size="14" fill="#f74c00">⚡ everything-fast</text>
   <text x="32" y="78" font-family="{sans}" font-size="20" fill="#e6edf3">{project}</text>
   <text x="32" y="148" font-family="{sans}" font-size="64" font-weight="800" fill="#f74c00">{headline}<tspan dx="12" font-size="28" font-weight="600" fill="#e6edf3">faster</tspan></text>
   <text x="420" y="92" font-family="{sans}" font-size="13" fill="#8b949e">{original}</text>
@@ -59,7 +59,7 @@ pub fn svg(project: &str, b: &BenchResult, ports: &[&Port]) -> String {
 
 pub fn markdown(project: &str, b: &BenchResult, ports: &[&Port]) -> String {
     let mut md = format!(
-        "# ⚡ {project}: {} faster\n\n`{}` went from **{}** to **{}** (median of {} runs each, original and Rust interleaved).\n\n![fast-anything report](report.svg)\n\n| function | per call | checked against |\n|---|---|---|\n",
+        "# ⚡ {project}: {} faster\n\n`{}` went from **{}** to **{}** (median of {} runs each, original and Rust interleaved).\n\n![everything-fast report](report.svg)\n\n| function | per call | checked against |\n|---|---|---|\n",
         times(b.speedup),
         b.command.join(" "),
         secs(b.before.median),
@@ -74,12 +74,12 @@ pub fn markdown(project: &str, b: &BenchResult, ports: &[&Port]) -> String {
             .unwrap_or_else(|| "n/a".into());
         md.push_str(&format!("| `{}` | {per_call} | {}/{} recorded real calls |\n", p.id, v.passed, v.total));
     }
-    md.push_str("\nThe original code stays in place: set `FAST_ANYTHING_DISABLE=1` to run it, or `fast-anything disable <id>` to remove the switch.\n\n<sub>Made with [fast-anything](https://github.com/AmmarArief/everything-fast)</sub>\n");
+    md.push_str("\nThe original code stays in place: set `EVERYTHING_FAST_DISABLE=1` to run it, or `everything-fast disable <id>` to remove the switch.\n\n<sub>Made with [everything-fast](https://github.com/AmmarArief/everything-fast)</sub>\n");
     md
 }
 
 pub fn write(ctx: &Ctx) -> Result<ReportOut> {
-    let b = ctx.state.bench.as_ref().context("no benchmark yet: run  fast-anything bench")?;
+    let b = ctx.state.bench.as_ref().context("no benchmark yet: run  everything-fast bench")?;
     let project = ctx.root.file_name().map(|s| s.to_string_lossy().into_owned()).unwrap_or_else(|| "your app".into());
     let ports: Vec<&Port> = ctx.state.ports.values().filter(|p| p.enabled).collect();
     let text = markdown(&project, b, &ports);

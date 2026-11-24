@@ -81,7 +81,7 @@ pub fn scan(s: &ScanOut) {
         ui::line("");
     }
     match s.hotspots.iter().find(|h| h.worth_it()) {
-        Some(h) => next(&format!("fast-anything port {}", h.id)),
+        Some(h) => next(&format!("everything-fast port {}", h.id)),
         None => {
             ui::line("  Nothing portable takes a real share of the run yet. The ✗ reasons above say what's in the way.")
         }
@@ -105,7 +105,7 @@ pub fn port(p: &PortOut, show_next: bool) {
             bold("TASK.md"),
             bold(format!("src/{file}"))
         ));
-        next(&format!("fast-anything verify {}", p.id));
+        next(&format!("everything-fast verify {}", p.id));
     }
 }
 
@@ -197,14 +197,14 @@ pub fn status(ctx: &Ctx) {
     let s = &ctx.state;
     if s.command.is_empty() {
         ui::line("  No scan yet.");
-        next("fast-anything scan -- python your_app.py");
+        next("everything-fast scan -- python your_app.py");
         return;
     }
     ui::line(format!("  app: {}   profiled run: {}", bold(s.command.join(" ")), secs(s.wall)));
     if s.ports.is_empty() {
         ui::line("  Nothing ported yet.");
         if let Some(h) = s.hotspots.iter().find(|h| h.worth_it()) {
-            next(&format!("fast-anything port {}", h.id));
+            next(&format!("everything-fast port {}", h.id));
         }
         return;
     }

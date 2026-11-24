@@ -1,4 +1,4 @@
-//! MCP server on stdio (JSON-RPC 2.0, one message per line). Lets any agent drive fast-anything.
+//! MCP server on stdio (JSON-RPC 2.0, one message per line). Lets any agent drive everything-fast.
 
 use crate::{pipeline, state, ui};
 use anyhow::Result;
@@ -8,9 +8,9 @@ use std::path::PathBuf;
 
 const PROTOCOL: &str = "2025-06-18";
 
-const INSTRUCTIONS: &str = "fast-anything speeds up Python, Node.js, Ruby, Java, Go, PHP, C, C++ and C# apps by porting their hottest pure functions to Rust (PyO3 / napi-rs / a C ABI bridge) \
-and proving the port gives the same results on real recorded calls. Loop: fast_scan -> fast_port -> write src/lib.rs \
-following the returned task -> fast_verify (repeat until it passes) -> fast_enable -> fast_bench -> fast_report.";
+const INSTRUCTIONS: &str = "everything-fast speeds up Python, Node.js, Ruby, Java, Go, PHP, C, C++ and C# apps by porting their hottest pure functions to Rust (PyO3 / napi-rs / a C ABI bridge) \
+and proving the port gives the same results on real recorded calls. Loop: everything_scan -> everything_port -> write src/lib.rs \
+following the returned task -> everything_verify (repeat until it passes) -> everything_enable -> everything_bench -> everything_report.";
 
 fn tools() -> Value {
     let path = json!({ "type": "string", "description": "Project folder (default: the server's working folder)" });
@@ -21,48 +21,48 @@ fn tools() -> Value {
     };
     json!([
         tool(
-            "fast_scan",
+            "everything_scan",
             "Run the app under a profiler and rank functions by time share and portability to Rust.",
             json!({ "command": { "type": "array", "items": { "type": "string" }, "description": "How the app runs, e.g. [\"python\", \"app.py\"] or [\"go\", \"run\", \".\"]" }, "duration": { "type": "number", "description": "C# only: stop the app after this many seconds (GUIs, servers)" }, "path": path }),
             json!(["command"])
         ),
         tool(
-            "fast_port",
-            "Record real calls to a hot function and create its Rust crate. Returns the task: write src/lib.rs, then call fast_verify.",
+            "everything_port",
+            "Record real calls to a hot function and create its Rust crate. Returns the task: write src/lib.rs, then call everything_verify.",
             json!({ "id": id, "samples": { "type": "integer", "default": 500 }, "path": path }),
             json!([])
         ),
         tool(
-            "fast_verify",
+            "everything_verify",
             "Release-build the Rust port and replay every recorded call against it. Returns compile errors or mismatches to fix.",
             json!({ "id": id, "path": path }),
             json!([])
         ),
         tool(
-            "fast_enable",
+            "everything_enable",
             "Switch the app over to a verified Rust port (reversible).",
             json!({ "id": id, "path": path, "force": { "type": "boolean" } }),
             json!([])
         ),
         tool(
-            "fast_disable",
+            "everything_disable",
             "Switch a function back to the original code.",
             json!({ "id": id, "path": path }),
             json!([])
         ),
         tool(
-            "fast_bench",
+            "everything_bench",
             "Time the whole app: original code vs Rust ports.",
             json!({ "runs": { "type": "integer", "default": 5 }, "path": path }),
             json!([])
         ),
         tool(
-            "fast_report",
+            "everything_report",
             "Write .fast/report.md and a shareable .fast/report.svg card.",
             json!({ "path": path }),
             json!([])
         ),
-        tool("fast_status", "Show the last scan and every port.", json!({ "path": path }), json!([])),
+        tool("everything_status", "Show the last scan and every port.", json!({ "path": path }), json!([])),
     ])
 }
 
@@ -71,7 +71,7 @@ fn call(params: &Value) -> Result<Value> {
     let root = args["path"].as_str().map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
     let id = args["id"].as_str();
     Ok(match params["name"].as_str().unwrap_or_default() {
-        "fast_scan" => {
+        "everything_scan" => {
             let command: Vec<String> = args["command"]
                 .as_array()
                 .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect())
@@ -88,11 +88,11 @@ fn call(params: &Value) -> Result<Value> {
                 .collect();
             json!({ "wall_seconds": scan.wall, "hotspots": top, "notes": scan.notes })
         }
-        "fast_port" => {
+        "everything_port" => {
             let samples = args["samples"].as_u64().unwrap_or(500) as usize;
             serde_json::to_value(pipeline::port(&root, id, samples)?)?
         }
-        "fast_verify" => {
+        "everything_verify" => {
             let (id, v) = pipeline::verify(&root, id)?;
             let mut out = serde_json::to_value(&v)?;
             out["id"] = json!(id);
@@ -102,11 +102,15 @@ fn call(params: &Value) -> Result<Value> {
             }
             out
         }
-        "fast_enable" => json!({ "enabled": pipeline::enable(&root, id, args["force"].as_bool().unwrap_or(false))? }),
-        "fast_disable" => json!({ "disabled": pipeline::disable(&root, id)? }),
-        "fast_bench" => serde_json::to_value(pipeline::bench(&root, args["runs"].as_u64().unwrap_or(5) as usize)?)?,
-        "fast_report" => serde_json::to_value(pipeline::report(&root)?)?,
-        "fast_status" => {
+        "everything_enable" => {
+            json!({ "enabled": pipeline::enable(&root, id, args["force"].as_bool().unwrap_or(false))? })
+        }
+        "everything_disable" => json!({ "disabled": pipeline::disable(&root, id)? }),
+        "everything_bench" => {
+            serde_json::to_value(pipeline::bench(&root, args["runs"].as_u64().unwrap_or(5) as usize)?)?
+        }
+        "everything_report" => serde_json::to_value(pipeline::report(&root)?)?,
+        "everything_status" => {
             let ctx = state::Ctx::open(&root)?;
             json!({ "command": ctx.state.command, "ports": ctx.state.ports, "bench": ctx.state.bench })
         }
@@ -139,7 +143,7 @@ fn handle(msg: &Value) -> Option<Value> {
         "initialize" => json!({
             "protocolVersion": params["protocolVersion"].as_str().unwrap_or(PROTOCOL),
             "capabilities": { "tools": {} },
-            "serverInfo": { "name": "fast-anything", "version": env!("CARGO_PKG_VERSION") },
+            "serverInfo": { "name": "everything-fast", "version": env!("CARGO_PKG_VERSION") },
             "instructions": INSTRUCTIONS,
         }),
         "ping" => json!({}),

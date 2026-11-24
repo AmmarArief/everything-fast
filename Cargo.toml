@@ -1,5 +1,5 @@
 [package]
-name = "fast-anything"
+name = "everything-fast"
 version = "0.8.6"
 edition = "2024"
 rust-version = "1.88"
@@ -12,7 +12,7 @@ categories = ["command-line-utilities", "development-tools::profiling"]
 exclude = ["examples/*/.fast", "examples/*/bin", "examples/*/obj", ".github", "docs/assets"]
 
 [[bin]]
-name = "fast-anything"
+name = "everything-fast"
 path = "src/main.rs"
 
 [dependencies]
